@@ -1521,10 +1521,10 @@ body #corr-plottooltip.plottooltip { background: #fff; }
 #table-container.merge-range-highlight .tabulator-cell.st-row-top {
   border-top: var(--merge-source-width) solid var(--merge-source-color) !important;
 }
-#table-container.merge-range-highlight .tabulator-cell.st-row-left {
+#table-container.merge-range-highlight .tabulator-cell.st-col-left {
   border-left: var(--merge-source-width) solid var(--merge-source-color) !important;
 }
-#table-container.merge-range-highlight .tabulator-cell.st-row-right {
+#table-container.merge-range-highlight .tabulator-cell.st-col-right {
   border-right: var(--merge-source-width) solid var(--merge-source-color) !important;
 }
 
