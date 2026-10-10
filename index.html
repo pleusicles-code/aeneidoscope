@@ -33,6 +33,21 @@
 -->
 
 <link rel="stylesheet" href="aeneidoscope.css">
+<style>
+/* Merge picker: dashed source-range outline, with a solid base once complete. */
+#table-container.merge-range-highlight .tabulator-cell.st-row-top {
+  border-top-style: dashed !important;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-left {
+  border-left-style: dashed !important;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-right {
+  border-right-style: dashed !important;
+}
+#table-container.merge-range-pending .tabulator-cell.st-row-bottom {
+  border-bottom-style: dashed !important;
+}
+</style>
       
 </head>
 <body>
@@ -1936,6 +1951,13 @@ function setMeasureMode(active, opts = {}) {
 }
 
 // --- Merge mode: two right-clicks define a range of visible rows -------
+function setMergeBorderState(state = null) {
+  const holder = document.getElementById("table-container");
+  if (!holder) return;
+  holder.classList.toggle("merge-range-highlight", state === "pending" || state === "complete");
+  holder.classList.toggle("merge-range-pending", state === "pending");
+}
+
 function setMergeMode(active, opts = {}) {
   const { silent = false } = opts;
 
@@ -1947,6 +1969,7 @@ function setMergeMode(active, opts = {}) {
   }
 
   clearAllStatHighlights();
+  setMergeBorderState();
   mergeModeActive = !!active;
   mergeFirstSegment = null;
   mergeSelection = null;
@@ -1976,6 +1999,7 @@ function handleMergeCellRightClick(row) {
   if (mergeFirstSegment === null) {
     mergeSelection = null;
     mergeFirstSegment = seg;
+    setMergeBorderState("pending");
     setStatHighlights([{ kind: "row", segment: seg }]);
     setMessage(`Merge: first segment <strong>${seg}</strong> selected. Right-click a cell in a <strong>different row</strong> to complete the range.`);
     return;
@@ -1993,6 +2017,7 @@ function handleMergeCellRightClick(row) {
     mergeFirstSegment = null;
     mergeSelection = null;
     clearAllStatHighlights();
+    setMergeBorderState();
     setMessage("Merge: the first segment is no longer visible. Please start the selection again.");
     return;
   }
@@ -2008,6 +2033,7 @@ function handleMergeCellRightClick(row) {
 
   mergeSelection = { segments, firstSegment, lastSegment, count: segments.length };
   mergeFirstSegment = null; // stay in Merge mode; the next two clicks can replace this range
+  setMergeBorderState("complete");
   setStatHighlights(segments.map(segment => ({ kind: "row", segment })));
   setMessage(`${segments.length} Segments (${firstSegment} - ${lastSegment}) selected for merging.`);
 }
