@@ -1537,6 +1537,28 @@ body #corr-plottooltip.plottooltip { background: #fff; }
   border-bottom: var(--merge-source-width) solid var(--merge-source-color) !important;
 }
 
+/* Synthetic Merge result: its top seam is already drawn on the final
+   source row. The other three sides use the stronger statistics purple. */
+#table-container .tabulator-row.merge-result-row {
+  position: relative;
+}
+#table-container .tabulator-row.merge-result-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 31;
+  border: 4px solid var(--stat-highlight-color);
+  border-top: 0;
+  box-sizing: border-box;
+}
+#table-container .tabulator-row.merge-result-row.merge-result-alone::after {
+  border-top: 4px solid var(--stat-highlight-color);
+}
+#table-container .tabulator-row.merge-result-row .tabulator-cell[tabulator-field="Plot"] {
+  font-weight: 700;
+}
+
 /* =========================================================
    MISCELLANEOUS
    ========================================================= */
