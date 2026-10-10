@@ -1506,6 +1506,56 @@ body #corr-plottooltip.plottooltip { background: #fff; }
     linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) bottom right;
 }
 
+/* ===== Merge picker source outlines (purple, dashed) =====
+   The top uses column-width-aligned dashes; the side dashes are painted on
+   the Tabulator row itself, ABOVE its cells (including sticky/frozen cells).
+   Native cell borders otherwise tend to look solid at short row heights. */
+
+#table-container.merge-range-highlight .tabulator-cell.st-row-top {
+  border-top-color: transparent !important;
+  background-image: linear-gradient(to right,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
+  background-size: calc(100% / var(--merge-dash-count, 5)) var(--highlight-width);
+  background-position: left top;
+  background-repeat: repeat-x;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+
+#table-container.merge-range-pending .tabulator-cell.st-row-top.st-row-bottom {
+  border-bottom-color: transparent !important;
+  background-image:
+    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%),
+    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
+  background-position: left top, left bottom;
+}
+
+#table-container.merge-range-highlight .tabulator-cell.st-row-left {
+  border-left-color: transparent !important;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-right {
+  border-right-color: transparent !important;
+}
+
+#table-container.merge-range-highlight .tabulator-row:has(.tabulator-cell.st-row-left)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  background-image:
+    linear-gradient(to bottom, var(--stat-highlight-color) 0 60%, transparent 60% 100%),
+    linear-gradient(to bottom, var(--stat-highlight-color) 0 60%, transparent 60% 100%);
+  background-size:
+    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2)),
+    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2));
+  background-position: left top, right top;
+  background-repeat: repeat-y, repeat-y;
+}
+
+/* A completed selection leaves the bottom border solid: this is the
+   future top edge of the synthetic merged row. */
+
 /* =========================================================
    MISCELLANEOUS
    ========================================================= */
