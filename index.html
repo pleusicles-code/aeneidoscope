@@ -34,9 +34,17 @@
 
 <link rel="stylesheet" href="aeneidoscope.css">
 <style>
-/* Merge picker: dashed source-range outline, with a solid base once complete. */
+/* Merge: fit a whole number of dash/gap cycles into each column.
+   This prevents the top/bottom dash pattern from restarting mid-cycle. */
 #table-container.merge-range-highlight .tabulator-cell.st-row-top {
-  border-top-style: dashed !important;
+  border-top-color: transparent !important;
+  background-image: linear-gradient(to right,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
+  background-size: calc(100% / var(--merge-dash-count, 5)) var(--highlight-width);
+  background-position: left top;
+  background-repeat: repeat-x;
+  background-origin: border-box;
+  background-clip: border-box;
 }
 #table-container.merge-range-highlight .tabulator-cell.st-row-left {
   border-left-style: dashed !important;
@@ -44,9 +52,14 @@
 #table-container.merge-range-highlight .tabulator-cell.st-row-right {
   border-right-style: dashed !important;
 }
-#table-container.merge-range-pending .tabulator-cell.st-row-bottom {
-  border-bottom-style: dashed !important;
+#table-container.merge-range-pending .tabulator-cell.st-row-top.st-row-bottom {
+  border-bottom-color: transparent !important;
+  background-image:
+    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%),
+    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
+  background-position: left top, left bottom;
 }
+
 </style>
       
 </head>
@@ -2867,6 +2880,22 @@ function applyStatHighlights() {
   if (!activeStatHighlights || !activeStatHighlights.length) return;
 
   applyHighlightLayer(activeStatHighlights, "st");
+
+  // For Merge, scale dash spacing to each top-border cell's actual width.
+  // A whole number of cycles per cell makes the dashed line join cleanly
+  // at column boundaries, including columns of different widths.
+  if (mergeModeActive) {
+    const holder = document.getElementById("table-container");
+    if (holder?.classList.contains("merge-range-highlight")) {
+      holder.querySelectorAll(".tabulator-cell.st-row-top").forEach(el => {
+        const width = el.getBoundingClientRect().width;
+        if (width > 0) {
+          el.style.setProperty("--merge-dash-count",
+            Math.max(1, Math.round(width / 20)));
+        }
+      });
+    }
+  }
 }
 
 
