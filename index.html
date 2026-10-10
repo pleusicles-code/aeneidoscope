@@ -46,11 +46,33 @@
   background-origin: border-box;
   background-clip: border-box;
 }
+/* Native dashed borders can appear solid on these short Tabulator rows.
+   Draw the vertical strokes explicitly, scaled to each row height. */
 #table-container.merge-range-highlight .tabulator-cell.st-row-left {
-  border-left-style: dashed !important;
+  border-left-color: transparent !important;
 }
 #table-container.merge-range-highlight .tabulator-cell.st-row-right {
-  border-right-style: dashed !important;
+  border-right-color: transparent !important;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-left::after,
+#table-container.merge-range-highlight .tabulator-cell.st-row-right::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--highlight-width);
+  pointer-events: none;
+  z-index: 2;
+  background-image: linear-gradient(to bottom,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
+  background-size: var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2));
+  background-repeat: repeat-y;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-left::after {
+  left: 0;
+}
+#table-container.merge-range-highlight .tabulator-cell.st-row-right::after {
+  right: 0;
 }
 #table-container.merge-range-pending .tabulator-cell.st-row-top.st-row-bottom {
   border-bottom-color: transparent !important;
@@ -2892,6 +2914,13 @@ function applyStatHighlights() {
         if (width > 0) {
           el.style.setProperty("--merge-dash-count",
             Math.max(1, Math.round(width / 20)));
+        }
+      });
+      holder.querySelectorAll(".tabulator-cell.st-row-left, .tabulator-cell.st-row-right").forEach(el => {
+        const height = el.getBoundingClientRect().height;
+        if (height > 0) {
+          el.style.setProperty("--merge-side-dash-count",
+            Math.max(2, Math.round(height / 16)));
         }
       });
     }
