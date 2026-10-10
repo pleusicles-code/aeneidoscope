@@ -1304,8 +1304,9 @@ function addGeneratedStatColumn(spec, resolved) {
 
     headerFilter: "input",
     headerFilterLiveFilter: true,
-    headerFilterFunc: function (headerValue, rowValue) {
-      return matchesGeneratedNumberFilter(rowValue, headerValue, field);
+    headerFilterFunc: function (headerValue, rowValue, rowData) {
+      return rowData?.__mergeResult ||
+        matchesGeneratedNumberFilter(rowValue, headerValue, field);
     },
 
     formatter: function (cell) {
@@ -8753,6 +8754,8 @@ function hideSpinner() {
       // MAIN FILTER FUNCTION
       //
       return function(headerValue, rowValue, rowData, filterParams) {
+        // Synthetic Merge rows represent the selection that passed this filter.
+        if (rowData?.__mergeResult) return true;
 
         const messageEl = document.getElementById("message-row");
         if (messageEl) setMessage("");
@@ -9470,7 +9473,8 @@ function hideSpinner() {
         headerFilter: "list",
 
         // ✅ force strict string comparison
-        headerFilterFunc: function (headerValue, rowValue) {
+        headerFilterFunc: function (headerValue, rowValue, rowData) {
+          if (rowData?.__mergeResult) return true;
           if (headerValue == null || headerValue === "") return true;
           return String(rowValue) === String(headerValue);
         },
@@ -9498,7 +9502,11 @@ function hideSpinner() {
         width: 40,
         hozAlign: "center",
         headerFilter: "list",        
-        headerFilterFunc: "=",
+        headerFilterFunc: function (headerValue, rowValue, rowData) {
+          if (rowData?.__mergeResult) return true;
+          if (headerValue == null || headerValue === "") return true;
+          return String(rowValue) === String(headerValue);
+        },
         headerFilterParams: {
           values: (() => {
             let obj = {"": ""};
@@ -9514,7 +9522,11 @@ function hideSpinner() {
         width: 40,
         hozAlign: "center",
         headerFilter: "list",        
-        headerFilterFunc: "=",
+        headerFilterFunc: function (headerValue, rowValue, rowData) {
+          if (rowData?.__mergeResult) return true;
+          if (headerValue == null || headerValue === "") return true;
+          return String(rowValue) === String(headerValue);
+        },
         headerFilterParams: {
           values: (() => {
             let obj = {"": ""};
