@@ -1944,6 +1944,189 @@ function setMergeBorderState(state = null) {
   holder.classList.toggle("merge-range-pending", state === "pending");
 }
 
+
+let mergeResultRow = null;
+let mergeResultData = null;
+
+function mergeRangeLabel(source) {
+  if (selectedLength === "book") {
+    const books = source.map(d => Number(String(d.Segment).match(/Aen\.\s*(\d+)/)?.[1]))
+      .filter(Number.isFinite);
+    if (!books.length) return "MERGE";
+    const lo = Math.min(...books), hi = Math.max(...books);
+    const pad = n => String(n).padStart(2, "0");
+    return "Aen. " + pad(lo) + "-" + pad(hi);
+  }
+
+  const parsed = source.map(d => {
+    const m = String(d.Segment ?? "").match(/^(\d{1,2})\.(\d{1,3})(?:-(\d{1,3}))?/);
+    if (!m) return null;
+    const book = Number(m[1]), from = Number(m[2]);
+    const n = Number(d.Length);
+    const to = m[3] != null ? Number(m[3]) :
+      Number.isFinite(n) && n > 0 ? from + n - 1 : from;
+    return {book, from, to};
+  }).filter(Boolean);
+  if (!parsed.length) return "MERGE";
+
+  parsed.sort((a,b) => a.book-b.book || a.from-b.from);
+  const first = parsed[0];
+  const last = parsed.reduce((a,b) =>
+    b.book > a.book || b.book === a.book && b.to > a.to ? b : a, parsed[0]);
+  const padBook = n => String(n).padStart(2, "0");
+  const padLine = n => String(n).padStart(3, "0");
+  const start = padBook(first.book) + "." + padLine(first.from);
+  return first.book === last.book
+    ? start + "-" + padLine(last.to)
+    : start + "-" + padBook(last.book) + "." + padLine(last.to);
+}
+
+function calculateMergedData(segments) {
+  if (!Array.isArray(dataXlsx)) return null;
+  const originals = new Map(dataXlsx.map(d => [String(d.Segment).trim(), d]));
+  const rows = segments.map(seg => originals.get(seg)).filter(Boolean);
+  if (rows.length < 2) return null;
+
+  const lengths = rows.map(d => Number(d.Length));
+  if (lengths.some(w => !Number.isFinite(w) || w <= 0)) return null;
+  const totalLength = lengths.reduce((a,b) => a+b, 0);
+  const label = mergeRangeLabel(rows);
+  const merged = {
+    Segment: label, Plot: "MERGED SEGMENT", Length: totalLength,
+    Index: "", Link: "", Scene: "", Section: "", Misc: "", Tags: "",
+    DYN: "", IVM: "", __mergeResult: true
+  };
+  const periodOf = new Map();
+  [period1Fields, period2Fields, period3Fields, period4Fields, period5Fields, period6Fields]
+    .forEach((arr, i) => arr.forEach(field => periodOf.set(field, "CO" + (i+1))));
+
+  const skip = new Set([
+    "Segment", "Plot", "Length", "Index", "Link", "Scene", "Section",
+    "Misc", "Tags", "For", "LASTCOL", "DYN", "IVM"
+  ]);
+  let partialCount = 0;
+  const fields = new Set(rows.flatMap(d => Object.keys(d)));
+  for (const field of fields) {
+    if (skip.has(field) || field.startsWith("copy_") || field.startsWith("cit_") ||
+        field.startsWith("^link") || isGeneratedStatField(field)) continue;
+
+    if (isPresenceOnlyField(field) || field === "^Era2^") {
+      const any = rows.some(d => d[field] != null && String(d[field]).trim() !== "" &&
+        Number(d[field]) !== 0);
+      merged[field] = any ? (field === "^Hex^" ? 300 : 100) : "";
+      continue;
+    }
+
+    const baseline = newBasis === "typ" ? "TYP" :
+      newBasis === "period" ? periodOf.get(field) : null;
+    const rebase = periodOf.has(field) && !!baseline;
+    let numerator = 0, denom = 0, presentLength = 0;
+
+    rows.forEach((d, i) => {
+      const value = _toNum(d[field]);
+      if (!Number.isFinite(value)) return;
+      if (rebase) {
+        const ref = _toNum(d[baseline]);
+        if (!Number.isFinite(ref)) return;
+        denom += lengths[i] * ref;
+      }
+      numerator += lengths[i] * value;
+      presentLength += lengths[i];
+    });
+
+    merged[field] = presentLength && (!rebase || denom !== 0)
+      ? rebase ? Math.round(100 * numerator / denom) : numerator / presentLength
+      : "";
+    if (periodOf.has(field) && presentLength < totalLength) partialCount++;
+  }
+
+  // DYN shows the weighted Self-basis tradition, irrespective of current basis.
+  const baselineFields = ["TYP", "CO1", "CO2", "CO3", "CO4", "CO5", "CO6"];
+  for (const field of baselineFields) {
+    let numerator = 0, denom = 0;
+    rows.forEach((d,i) => {
+      const v = _toNum(d[field]);
+      if (!Number.isFinite(v)) return;
+      numerator += lengths[i] * v;
+      denom += lengths[i];
+    });
+    merged[field] = denom ? numerator / denom : "";
+  }
+  const trendBaseline = newBasis === "typ" ? merged.TYP : merged[currentTrendSortValue];
+  for (const field of baselineFields) {
+    const value = merged[field];
+    merged["copy_" + field] =
+      newBasis !== "self" && Number.isFinite(_toNum(trendBaseline)) &&
+      Number(trendBaseline) !== 0 && Number.isFinite(_toNum(value))
+        ? Math.round(100 * Number(value) / Number(trendBaseline)) : value;
+  }
+
+  // Generated functions (MIN, STDEV, DIFF, etc.) must be recomputed.
+  activeGeneratedStatSpecs.forEach(spec => {
+    const resolved = resolveGeneratedStatSourceFields(spec);
+    if (!resolved.fields.length) return;
+    merged[makeGeneratedStatField(spec, resolved.fields)] =
+      computeGeneratedStatValue(spec.fn, collectSelectedRowValues(merged, resolved.fields));
+  });
+  return {data: merged, label, totalLength, partialCount};
+}
+
+function positionMergedRow() {
+  if (!table || !mergeResultRow || !mergeSelection) return;
+  const el = mergeResultRow.getElement?.();
+  if (!el) return;
+  el.classList.add("merge-result-row");
+  const selected = new Set(mergeSelection.segments);
+  const visible = (table.getRows("active") || []).filter(r =>
+    !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim()));
+  const anchor = visible.at(-1)?.getElement?.();
+  const holder = document.querySelector("#table-container .tabulator-table");
+  if (anchor?.isConnected && anchor !== el) {
+    anchor.insertAdjacentElement("afterend", el);
+    el.classList.remove("merge-result-alone");
+  } else if (holder) {
+    holder.appendChild(el);
+    el.classList.add("merge-result-alone");
+  }
+}
+
+function clearMergedRow() {
+  const previous = mergeResultRow;
+  mergeResultRow = null;
+  mergeResultData = null;
+  if (previous) {
+    try {
+      const promise = previous.delete();
+      if (promise?.catch) promise.catch(e => console.warn("Merge removal:", e));
+    } catch (e) { console.warn("Merge removal:", e); }
+  }
+}
+
+async function insertMergedRow(segments) {
+  if (!table) return;
+  const computed = calculateMergedData(segments);
+  if (!computed) {
+    setMessage("Merge: unable to calculate the range; check segment lengths.");
+    return;
+  }
+  clearMergedRow();
+  try {
+    const row = await table.addRow(computed.data, false);
+    mergeResultRow = row;
+    mergeResultData = computed.data;
+    positionMergedRow();
+    applyStatHighlights();
+    const note = computed.partialCount
+      ? '<div style="font-size:0.85em;margin-top:3px;">Note: Some commentaries cover only part of this range. Their values, and their Period/TYP reference values, use only available segments.</div>'
+      : "";
+    setMessage("<strong>" + segments.length + "</strong> Segments merged into <strong>" +
+      computed.label + "</strong> (" + computed.totalLength + " lines)." + note);
+  } catch (e) {
+    console.error("Merge insertion failed", e);
+    setMessage("Merge: calculation succeeded, but the merged row could not be displayed.");
+  }
+}
+
 function setMergeMode(active, opts = {}) {
   const { silent = false } = opts;
 
