@@ -505,10 +505,13 @@ let highlightMode        = null; // "mark"
 let highlightFirstCorner = null; // { seg, field } while picking area
 let pendingHighlightParam = null; // raw ?hi=... from URL (parsed lazily)
 
-// --- Measure / Correlation mode state (stats picking) ---
+// --- Measure / Correlation / Merge mode state (stats picking) ---
 let measureModeActive     = false;      // true → right-click used for measurements
 let correlationModeActive = false;      // true → repeated correlation picking is armed
+let mergeModeActive       = false;      // true → two row endpoints for a merged segment
 let measureFirstCell      = null;       // { rowIndex, seg, field } for first corner
+let mergeFirstSegment     = null;       // Segment identifier of the first picked row
+let mergeSelection        = null;       // { segments, firstSegment, lastSegment, count }
 let activeStatHighlights  = [];         // temporary purple highlight layer
 
 
@@ -1663,7 +1666,7 @@ function clearStatHighlightClasses() {
 function syncStatsTitleVisual() {
   const btn = document.getElementById("statsTitle");
   if (!btn) return;
-  btn.classList.toggle("stats-picker", !!(measureModeActive || correlationModeActive));
+  btn.classList.toggle("stats-picker", !!(measureModeActive || correlationModeActive || mergeModeActive));
 }
 
 let messageRowClearTimer = null;
@@ -1731,6 +1734,9 @@ function setCorrelationMode(active, opts = {}) {
   if (active) {
     if (measureModeActive) {
       setMeasureMode(false, { silent: true });
+    }
+    if (mergeModeActive) {
+      setMergeMode(false, { silent: true });
     }
     if (highlightMode === "mark") {
       setHighlightMode(null, { silent: true });
@@ -1833,6 +1839,9 @@ function setHighlightMode(mode, opts = {}) {
     if (correlationModeActive) {
       setCorrelationMode(false, { silent: true });
     }
+    if (mergeModeActive) {
+      setMergeMode(false, { silent: true });
+    }
     clearAllStatHighlights();
   } else {
     // exiting Highlight mode: clear all green highlights too
@@ -1892,6 +1901,9 @@ function setMeasureMode(active, opts = {}) {
     if (correlationModeActive) {
       setCorrelationMode(false, { silent: true });
     }
+    if (mergeModeActive) {
+      setMergeMode(false, { silent: true });
+    }
     if (highlightMode === "mark") {
       setHighlightMode(null, { silent: true });
     }    
@@ -1923,12 +1935,90 @@ function setMeasureMode(active, opts = {}) {
   }
 }
 
+// --- Merge mode: two right-clicks define a range of visible rows -------
+function setMergeMode(active, opts = {}) {
+  const { silent = false } = opts;
+
+  if (active) {
+    if (measureModeActive) setMeasureMode(false, { silent: true });
+    if (correlationModeActive) setCorrelationMode(false, { silent: true });
+    if (highlightMode === "mark") setHighlightMode(null, { silent: true });
+    clearAllGreenHighlights();
+  }
+
+  clearAllStatHighlights();
+  mergeModeActive = !!active;
+  mergeFirstSegment = null;
+  mergeSelection = null;
+  syncStatsTitleVisual();
+
+  if (silent) return;
+  if (mergeModeActive) {
+    setMessage("Merge mode active: right-click <strong>two cells</strong> <strong>in different rows</strong> to select the first and last segment to be merged.");
+  } else {
+    showTransientMessage("Merge mode turned off.", 5000);
+  }
+}
+
+function handleMergeCellRightClick(row) {
+  if (!table || !row) return;
+
+  const activeRows = table.getRows("active") || [];
+  const seg = String(row.getData()?.Segment ?? "").trim();
+  const currentIndex = activeRows.findIndex(r => String(r.getData()?.Segment ?? "").trim() === seg);
+
+  if (!seg || currentIndex === -1) {
+    setMessage("Merge: cannot select this row. Please choose a visible segment.");
+    return;
+  }
+
+  // A new first click also replaces any previously completed selection.
+  if (mergeFirstSegment === null) {
+    mergeSelection = null;
+    mergeFirstSegment = seg;
+    setStatHighlights([{ kind: "row", segment: seg }]);
+    setMessage(`Merge: first segment <strong>${seg}</strong> selected. Right-click a cell in a <strong>different row</strong> to complete the range.`);
+    return;
+  }
+
+  if (seg === mergeFirstSegment) {
+    setMessage("Merge: the second cell must be in a <strong>different row</strong>. Please pick another segment.");
+    return;
+  }
+
+  const firstIndex = activeRows.findIndex(r =>
+    String(r.getData()?.Segment ?? "").trim() === mergeFirstSegment
+  );
+  if (firstIndex === -1) {
+    mergeFirstSegment = null;
+    mergeSelection = null;
+    clearAllStatHighlights();
+    setMessage("Merge: the first segment is no longer visible. Please start the selection again.");
+    return;
+  }
+
+  // Always use current displayed order, respecting active filters and sorting.
+  const selectedRows = activeRows.slice(
+    Math.min(firstIndex, currentIndex),
+    Math.max(firstIndex, currentIndex) + 1
+  );
+  const segments = selectedRows.map(r => String(r.getData()?.Segment ?? "").trim());
+  const firstSegment = segments[0];
+  const lastSegment = segments[segments.length - 1];
+
+  mergeSelection = { segments, firstSegment, lastSegment, count: segments.length };
+  mergeFirstSegment = null; // stay in Merge mode; the next two clicks can replace this range
+  setStatHighlights(segments.map(segment => ({ kind: "row", segment })));
+  setMessage(`${segments.length} Segments (${firstSegment} - ${lastSegment}) selected for merging.`);
+}
+
 // --- Correlation mode state --------------------------------------------
 
 
 // ESCAPE key:
 // - when Correlation mode is active → exit Correlation mode and clear purple highlights
 // - when Measure mode is active     → exit Measure mode and clear purple highlights
+// - when Merge mode is active       → exit Merge mode and clear purple highlights
 // - when Mark mode is active and an area is pending → cancel area, keep Mark mode
 // - when Mark mode is active without pending area   → exit Mark mode
 document.addEventListener("keydown", function (e) {
@@ -1962,7 +2052,16 @@ document.addEventListener("keydown", function (e) {
     return;
   }
 
-  // CASE 2: Mark mode is active AND we are waiting for the second corner
+  // CASE 2: Merge mode
+  if (mergeModeActive) {
+    setMergeMode(false, { silent: true });
+    showTransientMessage("Merge mode turned off.", 5000);
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  // CASE 3: Mark mode is active AND we are waiting for the second corner
   if (highlightMode === "mark" && highlightFirstCorner) {
     highlightFirstCorner = null;
 
@@ -10120,8 +10219,8 @@ function hideSpinner() {
 
         holder.addEventListener("contextmenu", function (e) {
           // Only intervene if some feature is armed:
-          // Mark mode or Measure mode
-          if (highlightMode !== "mark" && !measureModeActive) {
+          // Mark mode, Measure mode, or Merge mode
+          if (highlightMode !== "mark" && !measureModeActive && !mergeModeActive) {
             return; // let the normal right-click behaviour happen
           }
 
@@ -10150,7 +10249,10 @@ function hideSpinner() {
             e.stopImmediatePropagation();
           }
 
-          if (measureModeActive) {
+          if (mergeModeActive) {
+            // Merge accepts any two cells in distinct rows, regardless of column.
+            handleMergeCellRightClick(row);
+          } else if (measureModeActive) {
             // In Measure mode, only true data cells may define a range.
             // Segment / Plot are excluded; whole-column measure is done via header.
             if (field === "Segment" || field === "Plot") {
@@ -12282,9 +12384,11 @@ function hideSpinner() {
         if (sorters.length === 0) return;
         
         clearHighlightClasses();
-        clearStatHighlightClasses();
+        if (!mergeModeActive) {
+          clearStatHighlightClasses();
+          activeStatHighlights = [];
+        }
         activeHighlights = [];
-        activeStatHighlights = [];
 
         const showRowIndex = document.getElementById("toggleRowIndex").checked;
         const currentSortField = sorters[0].field;
@@ -13451,6 +13555,16 @@ function hideSpinner() {
           setMeasureMode(true);
           // setMeasureMode writes the full guidance message
         }
+      });
+    })();
+
+    // Merge picker button (range calculation and synthetic row come later).
+    (function setupMergeUI() {
+      const btn = document.getElementById("mergeStats");
+      if (!btn) return;
+      btn.style.cursor = "pointer";
+      btn.addEventListener("click", () => {
+        setMergeMode(!mergeModeActive);
       });
     })();
     
