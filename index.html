@@ -2035,7 +2035,7 @@ function calculateMergedData(segments) {
     });
 
     merged[field] = presentLength && (!rebase || denom !== 0)
-      ? rebase ? Math.round(100 * numerator / denom) : numerator / presentLength
+      ? rebase ? Math.round(100 * numerator / denom) : Math.round(numerator / presentLength)
       : "";
     if (periodOf.has(field) && presentLength < totalLength) partialCount++;
   }
