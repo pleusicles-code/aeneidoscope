@@ -2002,7 +2002,7 @@ function calculateMergedData(segments) {
 
   const skip = new Set([
     "Segment", "Plot", "Length", "Index", "Link", "Scene", "Section",
-    "Misc", "Tags", "For", "LASTCOL", "DYN", "IVM"
+    "Misc", "Tags", "LASTCOL", "DYN", "IVM"
   ]);
   let partialCount = 0;
   const fields = new Set(rows.flatMap(d => Object.keys(d)));
