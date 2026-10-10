@@ -12568,6 +12568,7 @@ function hideSpinner() {
       const tableContainer = table.element; // Tabulator's root DOM element
 
       tableContainer.addEventListener("mouseover", (e) => {
+        if (e.target.closest(".merge-result-row")) return; // no source tooltip for MERGE
         const cell = e.target.closest(".tabulator-cell");
         if (!cell || !tableContainer.contains(cell)) return;
 
@@ -12772,9 +12773,8 @@ function hideSpinner() {
       });      
       
       table.on("cellMouseEnter", function(e, cell){
-        if (cell.getRow().getData()?.__mergeResult) return;
-      
         current_cell_link = "";
+        if (cell.getRow().getData()?.__mergeResult) return;
         
         const column = cell.getColumn();
         const field  = column ? column.getField() : null;
@@ -12829,7 +12829,8 @@ function hideSpinner() {
       });      
       
       table.on("cellClick", function(e, cell){
-      
+        if (cell.getRow().getData()?.__mergeResult) return;
+
         // Skip columns with their own handlers
         const field = cell.getColumn().getField();
         if (field === "Plot" || field === "Segment" || field === "^Bra2^") return;
