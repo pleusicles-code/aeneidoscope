@@ -1950,36 +1950,66 @@ let mergeResultRow = null;
 let mergeResultData = null;
 
 function mergeRangeLabel(source) {
-  if (selectedLength === "book") {
-    const books = source.map(d => Number(String(d.Segment).match(/Aen\.\s*(\d+)/)?.[1]))
-      .filter(Number.isFinite);
-    if (!books.length) return "MERGE";
-    const lo = Math.min(...books), hi = Math.max(...books);
-    const pad = n => String(n).padStart(2, "0");
-    return "Aen. " + pad(lo) + "-" + pad(hi);
+  const padBook = n => String(n).padStart(2, "0");
+  const padLine = n => String(n).padStart(3, "0");
+
+  // The Aeneid-wide Book table uses selectedLength=null, not "book".
+  // Recognize its rows by their Segment values instead of the UI state.
+  const bookMatches = source.map(d =>
+    String(d.Segment ?? "").trim().match(/^Aen\.\s*(\d{1,2})$/i)
+  );
+  if (bookMatches.length && bookMatches.every(Boolean)) {
+    const books = bookMatches.map(m => Number(m[1]));
+    return "Aen. " + padBook(Math.min(...books)) + "-" + padBook(Math.max(...books));
   }
 
+  // Sort by canonical poem position, not the currently displayed table order.
+  // Original workbook order resolves ties when two passages begin in one line.
+  const originalIndex = new Map(
+    (dataXlsx || []).map((d, i) => [String(d.Segment ?? "").trim(), i])
+  );
   const parsed = source.map(d => {
-    const m = String(d.Segment ?? "").match(/^(\d{1,2})\.(\d{1,3})(?:-(\d{1,3}))?/);
+    const key = String(d.Segment ?? "").trim();
+    const m = key.match(/^(\d{1,2})\.(\d{1,3})(?:-(\d{1,3}))?(\*)?$/);
     if (!m) return null;
-    const book = Number(m[1]), from = Number(m[2]);
-    const n = Number(d.Length);
-    const to = m[3] != null ? Number(m[3]) :
-      Number.isFinite(n) && n > 0 ? from + n - 1 : from;
-    return {book, from, to};
+    return {
+      book: Number(m[1]),
+      from: Number(m[2]),
+      sceneEnd: m[3] == null ? null : Number(m[3]),
+      index: originalIndex.get(key) ?? -1,
+      length: Number(d.Length)
+    };
   }).filter(Boolean);
   if (!parsed.length) return "MERGE";
 
-  parsed.sort((a,b) => a.book-b.book || a.from-b.from);
-  const first = parsed[0];
-  const last = parsed.reduce((a,b) =>
-    b.book > a.book || b.book === a.book && b.to > a.to ? b : a, parsed[0]);
-  const padBook = n => String(n).padStart(2, "0");
-  const padLine = n => String(n).padStart(3, "0");
-  const start = padBook(first.book) + "." + padLine(first.from);
+  parsed.sort((a, b) =>
+    a.book - b.book || a.from - b.from || a.index - b.index
+  );
+  const first = parsed[0], last = parsed[parsed.length - 1];
+
+  let endLine;
+  if (last.sceneEnd != null) {
+    // Scene ranges already encode their canonical last lines.
+    endLine = last.sceneEnd;
+  } else {
+    // The following ORIGINAL passage, even if hidden by a filter, fixes the
+    // last canonical line of this passage. A trailing * means the following
+    // passage starts within that same line, so that line belongs to both.
+    const nextRow = last.index >= 0 ? dataXlsx[last.index + 1] : null;
+    const nextMatch = String(nextRow?.Segment ?? "").trim()
+      .match(/^(\d{1,2})\.(\d{1,3})(\*)?$/);
+    if (nextMatch && Number(nextMatch[1]) === last.book) {
+      endLine = Number(nextMatch[2]) - (nextMatch[3] ? 0 : 1);
+    } else {
+      // Last passage of a book: no following start within the same book.
+      endLine = last.from + Math.ceil(last.length) - 1;
+    }
+  }
+
+  const begin = padBook(first.book) + "." + padLine(first.from);
   return first.book === last.book
-    ? start + "-" + padLine(last.to)
-    : start + "-" + padBook(last.book) + "." + padLine(last.to);
+    ? begin + "-" + padLine(endLine)
+    : begin + "-" + padBook(last.book) + "." + padLine(endLine);
 }
 
 function calculateMergedData(segments) {
