@@ -33,50 +33,7 @@
 -->
 
 <link rel="stylesheet" href="aeneidoscope.css">
-<style>
-/* Merge outlines are drawn as background images, not CSS borders:
-   all four sides use visible dash/gap patterns independent of border rendering. */
-#table-container.merge-range-highlight .tabulator-cell:is(.st-row-top, .st-row-left, .st-row-right) {
-  --merge-top-image: none;
-  --merge-left-image: none;
-  --merge-right-image: none;
-  --merge-bottom-image: none;
-  background-image:
-    var(--merge-top-image),
-    var(--merge-left-image),
-    var(--merge-right-image),
-    var(--merge-bottom-image) !important;
-  background-size:
-    calc(100% / var(--merge-dash-count, 5)) var(--highlight-width),
-    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2)),
-    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2)),
-    calc(100% / var(--merge-dash-count, 5)) var(--highlight-width);
-  background-position: left top, left top, right top, left bottom;
-  background-repeat: repeat-x, repeat-y, repeat-y, repeat-x;
-  background-origin: border-box;
-  background-clip: border-box;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-row-top {
-  --merge-top-image: linear-gradient(to right,
-    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
-  border-top-color: transparent !important;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-row-left {
-  --merge-left-image: linear-gradient(to bottom,
-    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
-  border-left-color: transparent !important;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-row-right {
-  --merge-right-image: linear-gradient(to bottom,
-    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
-  border-right-color: transparent !important;
-}
-#table-container.merge-range-pending .tabulator-cell.st-row-bottom {
-  --merge-bottom-image: linear-gradient(to right,
-    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
-  border-bottom-color: transparent !important;
-}
-</style>
+
       
 </head>
 <body>
@@ -2910,10 +2867,12 @@ function applyStatHighlights() {
             Math.max(1, Math.round(width / 20)));
         }
       });
-      holder.querySelectorAll(".tabulator-cell.st-row-left, .tabulator-cell.st-row-right").forEach(el => {
-        const height = el.getBoundingClientRect().height;
+      holder.querySelectorAll(".tabulator-cell.st-row-left").forEach(el => {
+        const rowEl = el.closest(".tabulator-row");
+        if (!rowEl) return;
+        const height = rowEl.getBoundingClientRect().height;
         if (height > 0) {
-          el.style.setProperty("--merge-side-dash-count",
+          rowEl.style.setProperty("--merge-side-dash-count",
             Math.max(2, Math.round(height / 16)));
         }
       });
