@@ -1,0 +1,1804 @@
+/* =========================================================
+   GENERAL
+   ========================================================= */
+
+:root {
+  --color-mid: #C5BAAF;
+  --color-selected: #C5BAAF;
+  --color-unselected: #dddddd;
+  --color-rowlabel: #444;  
+  --defwidth: 33px;
+  --narrowwidth: 18px;  
+  --defheight: 36px;
+  --pad-color: #ffffff;
+  --pad-style: dashed;
+  --pad-width: 1px;
+  --period1: #9dd9a3;  /* pistachio green */
+  --period2: #d86aae;  /* magenta orchid */  
+  --period3: #f4f431;  /* canary yellow */
+  --period4: #f7a8b8;  /* blush pink */
+  --period5: #60d6c9;  /* fresh turquoise */
+  --period6: #a774e0;  /* iris violet */
+  --period-border: 4px;
+  --title-cell-width: 64px;   /* shared width for left title cells */
+  --fontsize-header: 12px;
+  --fontsize-header2: 12px;  
+  --fontsize-cell: 10px;
+  --fontsize-segmentplot: 10px;  
+  --narrowfontsize: 14px;
+  --highlight-width: 4px;
+  --highlight-color: #00ff00;  
+  --stat-highlight-color: #8a2be2;  
+  --highlight-style: solid;   
+  --highlight-dash: 12px;
+  --highlight-gap: 6px;  
+}
+
+/* === condensed view overrides === */
+body.condensed {
+  --defwidth: 28px;          /* narrower columns */
+  --defheight: 32px;
+  --narrowwidth: 16px;    
+  --fontsize-header: 10px;
+  --fontsize-header2: 10px;  
+  --fontsize-cell: 9px;
+  --narrowfontsize: 12px;  
+}
+
+/* default: show large logo, hide small */
+.brand .logo-small { display: none; }
+
+.brand .logo-large { display: inline-block; }
+
+/* make header wrap gracefully on smaller widths */
+.page-header,
+.menustate-container {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* three-cell header table layout */
+.header-layout {
+  width: 100%;
+  border-collapse: collapse; /* eliminates border-spacing gaps */
+  border-spacing: 0;
+  margin-top: 4px;
+}
+
+.header-layout td {
+  border: none;
+  padding: 0;
+  /* border: 1px solid red !important;    bright color for visibility */
+}
+
+.tabulator .tabulator-col.generated-stat-column .tabulator-header-filter {
+    padding: 0 5px 5px 5px;
+}
+
+.tabulator .tabulator-col.generated-stat-column .tabulator-header-filter input {
+    height: 23px;
+    min-height: 23px;
+    padding: 0 3px;
+    line-height: 18px;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+/* left cell: shrink to content */
+.header-layout td:first-child {
+  max-width: 250px;          /* shrink to fit */
+  white-space: nowrap;
+}
+
+#doc-links td span{
+  display:block;
+  text-align:center;        /* centered in remaining (padded) area */
+}
+
+#doc-links td i {
+  position:absolute;
+  left:8px; top:50%;
+  transform:translateY(-50%);
+  margin-right: 8px;
+  font-size: 0.8em;   /* tweak if you want bigger/smaller icons */
+  vertical-align: 1px; /* nudge to align with text baseline */
+}
+
+/* collapse labels on narrow screens */
+
+#doc-links td {
+  background: var(--color-rowlabel);
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+  position:relative;
+  padding:2px 10px 2px 32px; /* left pad = icon width + gap */
+  white-space:nowrap;  
+  text-align: center;
+  transition: background 0.3s;
+  height: 19px;
+}
+
+#doc-links td:hover {
+  background: var(--color-rowlabel);
+}
+
+/* Normalize filter input inside Works box */
+
+.works-box input[type="text"] {
+  height: 17px;              /* force compact height */
+  line-height: 14px;         /* prevent vertical expansion */
+  padding: 0 4px;            /* remove vertical padding */
+  margin: 0;                 /* avoid extra spacing */
+  box-sizing: border-box;    /* predictable sizing */
+  font-size: 0.8em;          /* match labels */
+}
+
+.stats-picker {
+  color: var(--stat-highlight-color);
+}
+
+.mark-picker {
+  color: var(--highlight-color);
+}
+
+#correlation-box .option-box-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;             /* exact space between icon and text */
+}
+
+#export-box .option-box-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;             /* exact space between icon and text */
+}
+
+/* --- Collapsible behavior for option boxes --- */
+
+/* When collapsed, hide all controls inside these boxes */
+#export-box.collapsed .option-box-controls,
+#correlation-box.collapsed .option-box-controls,
+#highlight-box.collapsed .option-box-controls,
+#optplot-box.collapsed .option-box-controls,
+#heatmap-sensitivity-box.collapsed .option-box-controls,
+#sparkline-toggle.collapsed .option-box-controls {
+  display: none !important;
+}
+
+.option-box-controls {
+  cursor: pointer;
+}
+
+/* Make the titles clickable and align icon + label + caret */
+#export-box .option-box-title,
+#highlight-box .option-box-title,
+#correlation-box .option-box-title,
+#optplot-box .option-box-title,
+#heatmap-sensitivity-box .option-box-title,
+#sparkline-toggle .option-box-title {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Base caret style */
+#export-box .caret,
+#correlation-box .caret,
+#highlight-box .caret,
+#optplot-box .caret,
+#heatmap-sensitivity-box .caret,
+#sparkline-toggle .caret {
+  font-size: 1em;
+  width: 1em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.period-control-link {
+  display: inline-block;
+  margin: 0px 8px 0 4px;
+  cursor: pointer;
+}
+
+.period-control-link i {
+  margin-right: 4px;
+  color: grey; /* 👈 make icons grey */
+}
+
+.period-control-link:hover i {
+  color: #555; /* slightly darker on hover (optional) */
+}
+
+#heatmap-sensitivity {
+  accent-color: gray;
+}
+
+#header-tooltip.ui-tooltip {
+  max-width: 320px;
+}
+
+#header-tooltip:not(.ui-tooltip) {
+  max-width: 340px;   /* header-tooltip default */
+}
+
+#link-copy {
+  position: absolute;
+  top: 40px;
+  right: 68px;
+  font-size: 14px;
+  width: 14px;
+  padding: 6px;
+  background-color: rgba(0, 0, 0, 0.1);  /* translucent background */
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 100;  /* ensure it's above the table */
+}
+
+#link-copy:hover {
+  background-color: rgba(0, 0, 0, 0.8);  /* more solid on hover */
+}
+
+/* tiny toast for feedback (optional but handy) */
+#copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+  z-index: 9999;
+}
+
+#copy-toast.show { opacity: 1; }
+
+#png-download {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  font-size: 14px;
+  padding: 6px;
+  background-color: rgba(0, 0, 0, 0.1);  /* translucent background */
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 100;  /* ensure it's above the table */
+}
+
+#png-download:hover {
+  background-color: rgba(0, 0, 0, 0.8);  /* more solid on hover */
+}
+
+#csv-download {
+  position: absolute;
+  top: 40px;
+  right: 38px;
+  font-size: 14px;
+  padding: 6px;
+  background-color: rgba(0, 0, 0, 0.1);  /* translucent background */
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 100;  /* ensure it's above the table */
+}
+
+#csv-download:hover {
+  background-color: rgba(0, 0, 0, 0.8);  /* more solid on hover */
+}
+
+#svg-download-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 14px;
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+#svg-download-icon:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.hanging-indent p {
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+html, body {
+  font-family: Roboto, sans-serif;
+  height: 100%;
+  margin: 0px 4px 0px 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* prevents scrollbars */
+}
+
+/* everything above menustate-container keeps natural height */
+header,
+#upper-section {
+  flex: 0 0 auto;
+}
+
+/* the middle part (table container region) takes remaining space */
+#middle-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* crucial for flex overflow fix */
+}
+
+/* bottom bar is fixed height */
+#bottom-section {
+  flex: 0 0 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0px;
+}
+
+html.snapshot-mode, body.snapshot-mode {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+#active-filters .filter-pill {
+  align-items: center;
+  background-color: #eee;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9em;
+  margin: 0 5px 2px 0;
+  padding: 2px 8px 2px 6px;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+#active-filters .filter-pill:hover {
+  background-color: #ddd;
+  border-color: #999;
+}
+
+#active-filters .pill-close {
+  color: #777;
+  font-weight: bold;
+  margin-right: 4px;
+  transition: color 0.2s;
+}
+
+#active-filters .filter-pill:hover .pill-close {
+  color: #c00;
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  margin-right: 0px !important;
+}
+
+.menustate-container {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0px;
+  margin-top: 6px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.table-title {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* overlay to darken background */
+#overlay {
+  background: rgba(0,0,0,0.5);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 9998;
+}
+
+/* floating window */
+#floating-window {
+  background: white;
+  border: 2px solid #444;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  height: 80%;
+  left: 0;
+  right: 0;
+  position: fixed;
+  top: 10%;
+  width: 80%;
+  margin: 0 auto;
+  max-width: 1200px;
+  z-index: 9999;
+}
+
+.floating-window-content {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.floating-window-content iframe {
+  height: 100%;
+  width: 100%;
+}
+
+.close-btn {
+  background: #cccccc;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  height: 30px;
+  position: absolute;
+  right: 15px;
+  top: 5px;
+  width: 30px;
+}
+
+#page-title {
+  font-weight: 900;
+}
+
+#aeneidmenu .rowlabel {
+  background-color: var(--color-rowlabel);
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;
+  width: 1%;
+  text-align: left;
+}
+
+#aeneidmenu {
+  border-collapse: collapse;
+  border-radius: 6px;
+  margin-left: 2px;
+  font-family: Roboto, sans-serif;
+  overflow: hidden;
+  width: 100%;
+  background-color: var(--color-unselected, #ddd);
+}
+
+#aeneidmenu th,
+#aeneidmenu td {
+  background-color: var(--color-unselected);
+  border: 0px solid black;
+  cursor: pointer;
+  padding: 0px 0px;
+  text-align: center;
+}
+
+#aeneidmenu tr:nth-child(1) td {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 3px 3px;  
+}
+
+#aeneidmenu tr:nth-child(2) td {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 4px 1px 2px 1px;  
+  vertical-align: middle;
+}
+
+#aeneidmenu tr:nth-child(3) td {
+  font-size: 1.0em;
+  vertical-align: middle;
+  padding: 1px 2px 3px 2px;    
+}
+
+#aeneidmenu td.book,
+#aeneidmenu td.passage {
+  font-size: 0.9em;
+  min-width: 50px;
+  font-weight: 500;
+}
+
+.menustate {
+  display: none;
+}
+
+.selected {
+  background-color: var(--color-selected) !important;
+  color: white;  
+}
+
+.selected2b {
+  background-color: var(--color-selected) !important;
+/*  background: linear-gradient(to bottom, var(--color-unselected), var(--color-selected));*/
+  border-radius: 50px 50px 0 0;
+  color: white;  
+}
+
+.selected2b1 {
+  background-color: var(--color-selected) !important;
+  border-radius: 0px 50px 0 0;
+  color: white;  
+}
+
+.selected2b13 {
+  background-color: var(--color-selected) !important;
+  border-radius: 50px 0px 0 0;
+  color: white;  
+}
+
+.selected2t {
+  background-color: var(--color-selected) !important;
+  border-radius: 0px 0px 50px 50px;
+  color: white;  
+}
+
+.selected2t1 {
+  background-color: var(--color-selected) !important;
+  border-radius: 0 0 25px 0;
+  color: white;  
+}
+
+.selected2t13 {
+  background-color: var(--color-selected) !important;
+  border-radius: 0 0 6px 25px;
+  color: white;  
+}
+
+.rowlabel-selected {
+  background-color: var(--color-mid) !important;
+  color: white;  
+}
+
+.mid {
+  background-color: var(--color-mid) !important;
+}
+
+/* Shared layout for all option sections */
+    
+.option-row {
+  /* allows wrapping on small screens */;
+  margin-top: 0px;
+  /* center horizontally */;
+  flex-wrap: wrap;
+  /* spacing between boxes */;
+  display: flex;
+  column-gap: clamp(8px, 1.6vw, 12px);   /* horizontal */
+  row-gap:    clamp(0px, 0.8vw, 0px);    /* vertical (smaller) */
+  transition: gap 0.2s ease;
+  width: 100%;
+}
+
+/* When wrapping occurs, left-align lines (so the last line isn't stretched) */
+.option-row.is-wrapped {
+  justify-content: flex-start;
+}
+
+/* ← This dummy flex item eats the remaining space on the last line */
+.option-row::after {
+  content: "";
+  flex: 1 1 280px;   /* match your smallest box width */
+  min-width: 280px;  /* ensures it wraps like a real box */
+}
+
+/* If Works is the only child in its row */
+.option-row:has(.works-box) {
+  justify-content: flex-start !important;   /* modern browsers only */
+}
+
+.option-box {
+  /* spacing between sections */;
+  align-items: center;
+  background-color: var(--color-unselected);
+  border-radius: 6px;
+  border: 0px solid black;
+  display: flex;
+  font-family: Roboto, sans-serif;
+  font-size: 0.9em;  
+  gap: clamp(0px, 4vw, 0px) clamp(2px, 6vw, 20px);
+  transition: gap 0.2s ease;
+  margin-top: 10px;
+  padding: 2px 6px 2px 10px;
+  transition: background-color 0.2s ease;
+  min-height: 24px;
+}
+
+.option-box.column {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Bold title (line 1) */
+    .option-box-title {
+  font-weight: bold;
+  margin-bottom: -2px !important;
+  width: var(--title-cell-width);              /* ← adjust this value as you like */
+  min-width: var(--title-cell-width);          /* prevents shrinkage */
+  max-width: var(--title-cell-width);          /* ensures alignment with Works box */  
+}
+
+/* Radio/checkbox row (line 2) */
+    .option-box-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.option-box-controls label {
+  cursor: pointer;
+}
+
+.option-box-controls button {
+  display: block;
+  margin: 4px 0;
+  width: 100%;
+}
+
+.option-box.disabled {
+  background-color: #ccc;
+}
+
+.option-box label {
+  cursor: pointer;
+  margin: 0;
+}
+
+.option-box input[type="radio"] {
+  /* or any CSS color */;
+  accent-color: #999999;
+  border: 0px solid #999; 
+  cursor: pointer;
+  margin-right: 3px;
+}
+
+.option-box input[type="checkbox"] {
+  /* or any CSS color */;
+  accent-color: #999999;
+  border: 1px solid #999; 
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  margin-right: 3px;
+}
+
+    
+.radio-label {
+  background-color: var(--color-unselected);
+  border-radius: 4px;
+  border: 1px solid black;
+  cursor: pointer;
+  padding: 6px 6px;
+  user-select: none;
+}
+
+.radio-label input[type="radio"] {
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+a:link, a:visited {
+  color: #5699C6;
+  text-decoration: none;
+}
+
+/* === FINAL AUTHORITATIVE RULES: Works box layout === */
+
+/* Keep the whole cluster left and allow wrapping after any label */
+.works-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  justify-content: flex-start;
+}
+
+/* Title should never wrap and stays with the first gap */
+.works-title {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-right: 4px;
+  font-weight: bold;
+}
+
+/* Keep the whole block left in a centered .option-row */
+.option-row .works-box {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  text-align: left;
+}
+
+/* Invisible table layout */
+.works-table      { display: table; width: 100%; border-collapse: collapse; }
+.works-row        { display: table-row; }
+
+.works-title-cell {
+  display: table-cell;
+  width: var(--title-cell-width);              /* ← adjust this value as you like */
+  min-width: var(--title-cell-width);          /* prevents shrinkage */
+  max-width: var(--title-cell-width);          /* ensures alignment with Works box */
+  white-space: nowrap;
+  padding-right: 12px;
+  padding-top: 2px !important;
+  vertical-align: top;
+  font-weight: bold;
+}
+
+.works-controls-cell { display: table-cell; width: 100%; vertical-align: top; }
+
+/* Controls wrap inside the right cell; stay left-aligned */
+.works-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start; /* left align (overrides generic center rule) */
+  gap: 8px 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* One-line labels */
+.works-controls label {
+  text-align: left;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Don’t let the checkbox shrink away */
+.works-controls input[type="checkbox"] { flex-shrink: 0; }
+
+/* Minimal height for the Works option box */
+.option-box.works-box {
+  min-height: 28px;          /* adjust as needed to match your other boxes */
+  display: block;            /* keeps table layout working cleanly */
+  box-sizing: border-box;    /* include padding in height calc */
+  padding-top: 5px;          /* optional: balance vertical centering */
+  padding-bottom: 4px;
+}
+
+/* --- Periods box --- */
+
+.option-box.periods-box {
+  min-height: 28px;              /* same as Works */
+  display: block;
+  box-sizing: border-box;
+  padding-top: 5px;
+  padding-bottom: 4px;  
+  margin-right: auto;            /* stay left in row */
+}
+
+/* invisible table layout */
+.periods-table      { display: table; width: 100%; border-collapse: collapse; }
+
+.periods-row        { display: table-row; }
+
+/* Fixed width for the "Periods" title */
+.periods-title-cell {
+  display: table-cell;
+  width: var(--title-cell-width);              /* ← adjust this value as you like */
+  min-width: var(--title-cell-width);          /* prevents shrinkage */
+  max-width: var(--title-cell-width);          /* ensures alignment with Works box */
+  white-space: nowrap;
+  padding-right: 12px;
+  font-weight: bold;
+  vertical-align: top;  
+  padding-top: 2px !important;
+  margin-bottom: -2px !important;
+}
+
+.periods-controls-cell { display: table-cell; width: 100%; vertical-align: top; }
+
+/* flex container for the labels inside the right cell */
+.periods-controls {
+  display: flex;
+  flex-wrap: wrap;               /* whole controls move to next line if needed */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px 16px;
+}
+
+/* labels never break inside */
+.periods-controls label {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ensure checkboxes keep consistent size */
+.periods-controls input[type="checkbox"] { flex-shrink: 0; }
+
+/* same icon link styling already in your stylesheet, but we restate context */
+.period-control-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #444;
+}
+
+/* Controls container: left-aligned */
+.basis-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;   /* ✅ ensures left alignment */
+  gap: 8px 20px;
+}
+
+/* Sub-blocks separated and left-aligned */
+.basis-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+#footer-license-long,
+#footer-license-short {
+  font-family: Roboto, sans-serif;
+  color: #555;
+  text-align: right;
+  margin-top: 0px;
+  padding-top: 4px;
+  border-top: 0px solid #ccc;
+  line-height: 1.4;
+}
+
+#footer-license-long a,
+#footer-license-short a {
+  color: #337ab7;
+  text-decoration: none;
+}
+
+#footer-license-long a:hover,
+#footer-license-short a:hover {
+  text-decoration: underline;
+}
+
+/* Default: show long, hide short */
+#footer-license-long {
+  display: block;
+  font-size: 0.85em;
+}
+
+#footer-license-short {
+  display: none;
+  font-size: 0.8em;
+}
+
+/* Medium screens: smaller text */
+
+/* Narrow/mobile screens: swap versions */
+
+/* =========================================================
+   TABULATOR
+   ========================================================= */
+
+#table-container.condensed .tabulator-table {
+  font-size: 0.7em;
+}
+
+/* Make only the Segment header-filter input smaller */
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-header-filter input {
+    font-size: 10px;         /* smaller text */
+    
+    /* maintain normal height regardless of font size */
+    line-height: 19px;       /* adjust to match Plot’s input text box */
+    height: 23px;            /* hard height to ensure equal box size */
+    
+    padding-top: 1px;        /* adjust visually if needed */
+    padding-bottom: 1px;
+    box-sizing: border-box;  /* ensures height stays exact */
+}
+
+.tabulator .tabulator-col[tabulator-field="Plot"] .tabulator-header-filter input {
+    font-size: 10px;         /* smaller text */
+    
+    /* maintain normal height regardless of font size */
+    line-height: 19px;       /* adjust to match Plot’s input text box */
+    height: 23px;            /* hard height to ensure equal box size */
+    
+    padding-top: 1px;        /* adjust visually if needed */
+    padding-bottom: 1px;
+    box-sizing: border-box;  /* ensures height stays exact */
+}
+
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-header-filter input::-webkit-search-cancel-button {
+    margin-right: -3px;
+    width: 10px;     /* default is ~16px */
+    height: 10px;
+}
+
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-col-content,
+.tabulator .tabulator-col[tabulator-field="Plot"] .tabulator-col-content {
+  display: flex !important;               /* override Tabulator’s default */
+  flex-direction: column !important;      /* stack arrow (if any) and title vertically */
+  align-items: center !important;         /* center horizontally in the column */
+  justify-content: center !important;     /* center vertically in the tall header row */
+  margin-bottom: 5px;
+}
+
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-col-title,
+.tabulator .tabulator-col[tabulator-field="Plot"] .tabulator-col-title {
+  font-size: 14px;             /* adjust as you like */
+  writing-mode: horizontal-tb; /* ensure non-vertical text */
+  transform: none;             /* kill any leftover rotation */
+  text-orientation: initial;
+  white-space: nowrap;         /* or normal, if you want wrapping */
+}
+
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-col-title {
+  padding-bottom: 34px;
+  order: 2;
+}
+
+.tabulator .tabulator-col[tabulator-field="Plot"] .tabulator-col-title {
+  padding-bottom: 36px;
+}
+
+.tabulator .tabulator-col[tabulator-field="DYN"] .tabulator-col-content,
+.tabulator .tabulator-col[tabulator-field="IVM"] .tabulator-col-content {
+  display: flex !important;               /* override Tabulator’s default */
+  flex-direction: column !important;      /* stack arrow (if any) and title vertically */
+  align-items: center !important;         /* center horizontally in the column */
+  justify-content: center !important;     /* center vertically in the tall header row */
+  margin-left: 10px;
+}
+
+.tabulator .tabulator-col[tabulator-field="DYN"] .tabulator-col-title,
+.tabulator .tabulator-col[tabulator-field="IVM"] .tabulator-col-title {
+  font-size: 14px;             /* adjust as you like */
+  writing-mode: horizontal-tb; /* ensure non-vertical text */
+  transform: none;             /* kill any leftover rotation */
+  padding-bottom: 5px;
+  text-orientation: initial;
+  white-space: nowrap;         /* or normal, if you want wrapping */
+}
+
+/* SEGMENT: put sort arrow above the text */
+.tabulator .tabulator-col[tabulator-field="Segment"] .tabulator-arrow {
+  order: 0 !important;                    /* arrow first */
+  position: static !important;        /* absolutely required */
+  display: block !important;          /* take full width */  
+  margin-bottom: 2px;          /* small gap between arrow and title */
+}
+
+/* SEGMENT: put sort arrow above the text */
+.tabulator .tabulator-col[tabulator-field="DYN"] .tabulator-arrow {
+  order: 0 !important;                    /* arrow first */
+  position: static !important;        /* absolutely required */
+  display: block !important;          /* take full width */  
+  margin-bottom: -28px;          /* small gap between arrow and title */
+}
+
+/* Scatter tooltip look — only for the cloned one */
+#corr-plottooltip.plottooltip {
+  /* layout from JS: position:absolute; width/height set in JS */
+  background: #fff;                 /* ← solid background */
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.25);
+  padding: 6px;
+  color: #222;                      /* text color inside */
+  backdrop-filter: none;            /* ignore any global blur */
+  -webkit-backdrop-filter: none;
+  z-index: 10060;                   /* above the app */
+}
+
+/* (Optional) ensure it overrides a transparent default without !important */
+body #corr-plottooltip.plottooltip { background: #fff; }
+
+.tabulator-col-content {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
+.tabulator-col-resize-handle {
+  cursor: inherit !important;
+  pointer-events: none !important; /* don't let the handles grab the mouse */
+}
+
+.tabulator-col.trends {
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+  border-left: 3px dashed black !important;
+  border-right: 3px dashed black !important;
+  border-bottom: 0px dashed black !important;
+
+}
+
+.tabulator-col.typ {
+  border-top: var(--period-border) solid black !important;      
+}
+
+.tabulator-cell.tabulator-frozen.segment {
+  width: 94px !important;
+  margin-right: 1px !important;
+}
+
+.tabulator-col.plot-header {
+  width: 129px !important;
+}
+
+.tabulator-cell.tabulator-frozen.plot {
+  width: 131px !important;
+}
+
+.tabulator-cell.trends {
+  border-left: 3px dashed black !important;
+  border-right: 3px dashed black !important;
+  border-bottom: 3px dashed black !important;  
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-cell.rownum-cell {
+  border-bottom: 1px solid #dddddd;
+}
+
+#table-container {
+  transition: background 0.1s;
+  background-color: #f9f9f9;
+  background-image: radial-gradient(#ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-radius: 4px;
+  border-left: 2px solid #f9f9f9 !important;
+  border-right: 2px solid #f9f9f9 !important;
+  border-bottom: 0px solid #f9f9f9 !important;
+  border-top: 0px solid #f9f9f9 !important;      
+  margin-top: 5px;
+  max-width: 100%;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+#table-container.filtered {
+  background-color: #f9f9f9;
+  background-image: radial-gradient(#999 1px, transparent 1px);
+  background-size: 12px 12px;
+  transition: background 0.1s;
+}
+
+.tabulator .tabulator-header {
+  border-top: 2px solid grey;
+  border-bottom: 2px solid grey;  
+  border-right: 2px solid grey;
+  border-left: 2px solid grey;  
+  height: 160px !important;          /* set your desired fixed height */
+  min-height: 160px !important;
+  max-height: 160px !important;
+  overflow: hidden;
+}
+
+.tabulator {
+  height: 92% !important;
+}
+
+.tabulator .tabulator-col {
+  height: 160px !important;          /* same for each column header */
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  font-size: var(--fontsize-header);
+  font-weight: 600;
+  padding-bottom: 0px !important;
+}
+
+.tabulator-cell {
+  border-right: 0px black !important;
+  box-sizing: border-box;
+  font-size: var(--fontsize-cell) !important;
+  font-weight: bold;
+  height: var(--defheight);
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+.tabulator-cell strong {
+  font-weight: bold;
+}
+
+.tabulator-cell.header-dyn-col {
+  border-left: 1px solid #dcdcdc !important;
+  border-right: 1px solid #dcdcdc !important;
+}
+
+/* normalize frozen-row backgrounds for both parities */
+.tabulator-row.tabulator-row-even,
+.tabulator-row.tabulator-row-odd {
+  background-color: #fff !important;
+}
+
+.tabulator-row:hover,
+    .tabulator-frozen-left .tabulator-row:hover {
+        position: relative;
+        box-shadow: 0 0px 18px rgba(100, 100, 100, 0.5);
+        z-index: 5;
+        background-color: #f5f5f5 !important;
+}
+
+/* keep sparkline columns white even on hover */
+.tabulator-row:hover .tabulator-cell[tabulator-field="IVM"],
+.tabulator-row:hover .tabulator-cell[tabulator-field="DYN"] {
+  background-color: #fff !important;
+}
+
+.tabulator-cell.thin-padding, .tabulator-cell.thin-padding-left {
+  background-image:
+    repeating-linear-gradient(
+      46deg,
+      rgba(255,255,255,0.15) 0 3px,
+      rgba(255,255,255,0.0) 3px 12px
+    ) !important;
+}
+
+.tabulator-col.header-thin-padding {
+  background-image:
+    repeating-linear-gradient(
+      46deg,
+      rgba(164,164,164,0.15) 0 3px,
+      rgba(0,0,0,0.0) 3px 12px
+    ) !important;
+}
+
+.tabulator-cell.thin-padding-right {
+  background-image:
+    repeating-linear-gradient(
+      46deg,
+      rgba(255,255,255,0.15) 0 3px,
+      rgba(255,255,255,0.0) 3px 12px
+    );  
+}
+
+.tabulator-row {
+  height: var(--defheight) !important;
+  transition: outline 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wrap-text {
+  font-weight: normal;
+  line-height: 1em;
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.segment {
+  padding-left: 0px !important;
+  padding: 5px !important;
+  font-size: var(--fontsize-segmentplot) !important;
+}
+
+.plot {
+  font-size: var(--fontsize-segmentplot) !important;
+  padding: 5px !important;
+}
+
+.plot-border-right {
+  border-right: 1px solid grey !important;
+}
+
+.ivm-border-right {
+  border-right: 1px solid #dcdcdc !important;
+}
+
+.border-left {
+  border-left: 2px solid black !important;
+}
+
+.border-right {
+  border-right: 2px solid black !important;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #dddddd !important;
+}
+
+.numeric-hidden {
+  color: transparent !important;
+  cursor: default;
+  transition: color 0.2s ease;
+}
+
+.numeric-hidden:hover,
+    .numeric-visible .numeric-hidden,
+    .tabulator.numeric-visible-hi .tabulator-cell.hi-interior.numeric-hidden,
+    .tabulator.numeric-visible-st .tabulator-cell.st-interior.numeric-hidden {
+  color: var(--heat-color) !important;
+}
+
+.tabulator-cell.sV {
+  font-size: var(--narrowfontsize) !important;
+/*  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;*/
+}
+
+.colwidth, .header-period1, .header-period2, .header-period3, .header-period4, .header-period5, .header-period6 {
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.hortensius1 {
+  border-right: 0px !important;
+  min-width: calc(var(--defwidth) / 2) !important;
+  width: calc(var(--defwidth) / 2) !important;
+}
+
+.hortensius2 {
+  min-width: calc(var(--defwidth) / 2) !important;
+  width: calc(var(--defwidth) / 2) !important;
+}
+
+.tabulator-col-title {
+  padding-top: 4px !important;
+}
+
+.tabulator-col.hortensius1, .tabulator-col.hortensius2 {
+  border-top: var(--period-border) solid var(--period3) !important;
+  min-width: calc(var(--defwidth) / 2) !important;
+  width: calc(var(--defwidth) / 2) !important;
+  font-size: var(--fontsize-header2) !important;  
+}
+
+.tabulator-col.header-period1 {
+  border-top: var(--period-border) solid var(--period1) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-col.header-colIndex {
+  border-top: var(--period-border) solid var(--period2) !important;
+}
+
+.colIndex {
+  background-color: #eda !important;
+  font-size: 0.7em !important;
+  color: #000 !important;
+  min-width: 18px !important;
+  width: 18px !important;
+}
+
+.tabulator-col.header-period1ivm {
+  border-top: var(--period-border) solid var(--period1) !important;
+  min-width: 90px !important;
+  width: 90px !important;
+}
+
+.header-period1ivm {
+  min-width: 90px !important;
+  width: 90px !important;
+}
+
+.tabulator-col.header-period2 {
+  border-top: var(--period-border) solid var(--period2) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-col.header-period3 {
+  border-top: var(--period-border) solid var(--period3) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-col.header-period4 {
+  border-top: var(--period-border) solid var(--period4) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-col.header-period5 {
+  border-top: var(--period-border) solid var(--period5) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+.tabulator-col.header-period6 {
+  border-top: var(--period-border) solid var(--period6) !important;
+  min-width: var(--defwidth) !important;
+  width: var(--defwidth) !important;
+}
+
+/* 20px narrow column (header + cells) */
+.narrow {
+  min-width: var(--narrowwidth) !important;
+  width: var(--narrowwidth) !important;
+}
+
+/* header needs the same constraint */
+.tabulator-col.narrow {
+  min-width: var(--narrowwidth) !important;
+  width: var(--narrowwidth) !important;
+}
+
+.data-tooltip-panel {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  display: block;
+  font-family: 'EB Garamond', serif;
+  max-width: 240px;
+  opacity: 0;
+  padding: 12px;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 1000;
+}
+
+.data-tooltip-panel.show {
+  /* enable interaction when visible */;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+#cell-link-icon {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 7px;
+  padding: 2px;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;               /* matches your download icon */
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+  display: none;              /* hidden by default, shown on hover */
+  text-decoration: none;      /* prevent underline if it's an <a> */
+}
+
+#cell-link-icon:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+}
+
+/* === Perimeter-only highlights (using borders, not box-shadow) ======= */
+
+/* Generic: allow thicker borders on highlighted cells */
+#table-container .tabulator-cell {
+  box-sizing: border-box; /* usually already true, but safe */
+}
+
+/* ===== Permanent highlights (green) ===== */
+
+#table-container .hi-col-left,
+#table-container .hi-row-left,
+#table-container .hi-area-left,
+#table-container .tabulator-cell.hi-col-left {
+  border-left: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+#table-container .hi-col-right,
+#table-container .hi-row-right,
+#table-container .hi-area-right,
+#table-container .tabulator-cell.hi-col-right {
+  border-right: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+#table-container .hi-row-top,
+#table-container .hi-area-top {
+  border-top: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+#table-container .hi-row-bottom,
+#table-container .hi-area-bottom,
+#table-container .tabulator-cell.hi-col-bottom,
+#table-container .tabulator-row.hi-row-bottom-row {
+  border-bottom: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+/* Column header */
+#table-container .tabulator-header .tabulator-col.hi-col-header-left,
+#table-container .tabulator-header .hi-col-header-left {
+  border-left: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+  border-top: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+#table-container .tabulator-header .tabulator-col.hi-col-header-right,
+#table-container .tabulator-header .hi-col-header-right {
+  border-right: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+  border-top: var(--highlight-width) var(--highlight-style) var(--highlight-color) !important;
+}
+
+#table-container .tabulator-cell.hi-cross-corner,
+#table-container .tabulator-cell.st-cross-corner {
+  position: relative;
+}
+
+#table-container .tabulator-cell.hi-cross-corner::before,
+#table-container .tabulator-cell.st-cross-corner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: var(--highlight-width) var(--highlight-width);
+}
+
+#table-container .tabulator-cell.hi-cross-corner::before {
+  background:
+    linear-gradient(var(--highlight-color), var(--highlight-color)) top left,
+    linear-gradient(var(--highlight-color), var(--highlight-color)) top right,
+    linear-gradient(var(--highlight-color), var(--highlight-color)) bottom left,
+    linear-gradient(var(--highlight-color), var(--highlight-color)) bottom right;
+}
+
+/* ===== Temporary stats highlights (purple) ===== */
+
+#table-container .st-col-left,
+#table-container .st-row-left,
+#table-container .st-area-left,
+#table-container .tabulator-cell.st-col-left {
+  border-left: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+#table-container .st-col-right,
+#table-container .st-row-right,
+#table-container .st-area-right,
+#table-container .tabulator-cell.st-col-right {
+  border-right: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+#table-container .st-row-top,
+#table-container .st-area-top {
+  border-top: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+#table-container .st-row-bottom,
+#table-container .st-area-bottom,
+#table-container .tabulator-cell.st-col-bottom,
+#table-container .tabulator-row.st-row-bottom-row {
+  border-bottom: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+/* Column header */
+#table-container .tabulator-header .tabulator-col.st-col-header-left,
+#table-container .tabulator-header .st-col-header-left {
+  border-left: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+  border-top: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+#table-container .tabulator-header .tabulator-col.st-col-header-right,
+#table-container .tabulator-header .st-col-header-right {
+  border-right: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+  border-top: var(--highlight-width) var(--highlight-style) var(--stat-highlight-color) !important;
+}
+
+#table-container .tabulator-cell.st-cross-corner::before {
+  background:
+    linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) top left,
+    linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) top right,
+    linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) bottom left,
+    linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) bottom right;
+}
+
+/* =========================================================
+   MISCELLANEOUS
+   ========================================================= */
+
+/* base size aligns with text; tweak as you like */
+.scatter-glyph { width: 1.1em; height: 1.1em; display:inline-block; }
+
+/* dots + line default look */
+.scatter-glyph circle { fill: #000; opacity: .95; }
+
+.scatter-glyph line   { stroke: #000; stroke-width: 2; }
+
+#corr-plottooltip .axis-title {
+  font-family: Roboto, sans-serif;  
+}
+
+/* Make the embedded panel fill the tooltip nicely */
+#corr-plottooltip .panel {
+  height: 100%;
+  background: #fff;
+  padding-top: 10px;
+  max-height: 500px;
+}
+
+/* Keep the SVG responsive inside the fixed 600×400 tooltip */
+#corr-plottooltip svg.scatter-plot {
+  width: 100%;
+  height: 100%;          /* fill the panel vertically */
+  max-height: 500px;     /* tweak if your header/controls are taller */
+}
+
+/* Controls row spacing */
+#corr-plottooltip .scatter-controls {
+  margin-top: 8px;
+  width: max-content;   /* shrink to content */
+  text-align: center;
+  margin-left: auto;    /* center the block */
+  margin-right: auto;   /* center the block */
+}
+
+#corr-plottooltip .scatter-controls label {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: 500 13px/1.2 Roboto, sans-serif;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter .12s ease, box-shadow .12s ease;
+}
+
+#corr-plottooltip .series-r-label  input[type="checkbox"] { accent-color: #5398BE; }
+
+#corr-plottooltip .series-rs-label input[type="checkbox"] { accent-color: #DEA54B; }
+
+#corr-plottooltip .series-big-label input[type="checkbox"] { accent-color: #dddddd; }
+
+/* r (blue) */
+#corr-plottooltip .series-r-label {
+  background: #5398BE1A;            /* 10% tint */
+  border-color: #5398BE33;           /* subtle border */
+  color: #1e5068;                    /* readable on tint */
+  margin-right: 15px;
+}
+
+/* ρ (amber) */
+#corr-plottooltip .series-rs-label {
+  background: #DEA54B1A;             /* 10% tint */
+  border-color: #DEA54B33;
+  color: #5a3b00;
+  margin-right: 15px;  
+}
+
+#corr-plottooltip .series-big-label {
+  background: #eeeeee;             /* 10% tint */
+  border-color: #888888;
+  color: #000000;
+}
+
+#corr-plottooltip .series-r .dot { fill: #5398BE; }
+
+#corr-plottooltip .series-rs .dot { fill: #DEA54B; }
+
+/* Sparkline sub-picker popover */
+.spark-subpicker {
+  position: absolute;            /* positioned by JS */
+  z-index: 2000;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+  padding: 5px 5px;
+  min-width: 80px;              /* tweak as you like */
+  max-width: 90vw;
+  font-family: Roboto, sans-serif;
+  display: flex;                 /* enables centering of the inner list */
+  justify-content: center;       /* horizontally center the list block */
+  font-size: 12px;   /* was default; try 12px or 11px */
+  line-height: 1.25; /* tighter lines */  
+}
+
+/* The inner list block (centered) */
+.spark-subpicker__list {
+  display: inline-block;         /* treat the list as a block we can center */
+  text-align: center;              /* keep item text left-aligned */
+  width: fit-content;            /* shrink to content */
+  max-width: 440px;              /* safety clamp */
+}
+
+/* List items */
+.spark-subpicker__item {
+  padding: 8px 14px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+
+.spark-subpicker__item:hover {
+  background: #f5f5f5;
+}
+
+.tooltip-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-family: 'EB Garamond', serif;
+  max-width: 400px;
+  padding: 10px 14px;
+}
+
+.tooltip-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.3em;
+  font-weight: bold;
+  padding-bottom: 16px;
+  text-align: left;
+}
+
+.tooltip-table {
+  border-collapse: collapse;
+  font-family: 'EB Garamond', serif;
+  width: 100%;
+}
+
+.tooltip-table td {
+  font-family: 'EB Garamond', serif;
+  padding: 2px 4px;
+  vertical-align: top;
+}
+
+.tooltip-label {
+  color: #444;
+  font-family: 'EB Garamond', serif;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.tooltip-value {
+  color: #222;
+  font-family: 'EB Garamond', serif;
+}
+
+.tooltip-value-small {
+  font-family: 'EB Garamond', serif;
+  font-size: 0.8em;
+}
+
+.header-tooltip-panel {
+  z-index: 1000;
+  padding: 12px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  display: block;
+  font-family: 'EB Garamond', serif;
+  max-width: 340px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.header-tooltip-panel.show {
+  /* only catch events when actually visible */;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.hover-panel,
+.svg-hover-panel {
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  position: absolute;
+  z-index: 1000;
+}
+
+.hover-panel {
+  height: 350px;
+  width: 700px;
+}
+
+.hover-panel iframe {
+  border-radius: 6px;
+  border: none;
+  height: 100%;
+  width: 100%;
+}
+
+.svg-hover-panel {
+  padding: 12px;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   MEDIA
+   ========================================================= */
+
+@media (max-width: 1450px) {
+  #doc-links td span {
+    display: none;
+  }
+
+  #doc-links td {
+    padding: 2px 8px 2px 24px;   /* keep room for the icon */
+    width: auto;
+    min-width: 26px;             /* or 28px / 30px if you want slightly larger buttons */
+  }
+
+  #doc-links td i {
+    left: 50%;
+    margin-left: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (max-width: 1280px) {
+  .brand .logo-large { display: none; }
+  .brand .logo-small { display: inline-block; }
+
+  .page-header { align-items: center; }
+  .option-box { gap: 12px; padding: 2px 12px; }
+
+  /* slightly smaller header titles/labels so things fit */
+  .page-title { font-size: 20px; }
+  .table-title { font-size: 14px; }
+}
+
+@media (max-width: 1520px) {
+  .logo-large img {
+    max-height: 70px;   /* ↓ shrink logo image height */
+    width: auto;        /* preserve aspect ratio */
+  }
+}
+
+@media (max-width: 1280px) {
+  #footer-license-long {
+    font-size: 0.7em;
+  }
+}
+
+@media (max-width: 1100px) {
+  #footer-license-long {
+    display: none;
+  }
+  #footer-license-short {
+    display: block;
+  }
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --defwidth: 30px;   /* tweak to taste: 24–28 is common */
+    --defheight: 36px;
+    --fontsize-header: 12px;
+    --fontsize-header2: 10px;    
+    --fontsize-cell: 9px;
+  }
+}
+
+@media (max-height: 900px) {
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
