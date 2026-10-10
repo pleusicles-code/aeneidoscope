@@ -34,54 +34,48 @@
 
 <link rel="stylesheet" href="aeneidoscope.css">
 <style>
-/* Merge: fit a whole number of dash/gap cycles into each column.
-   This prevents the top/bottom dash pattern from restarting mid-cycle. */
-#table-container.merge-range-highlight .tabulator-cell.st-row-top {
-  border-top-color: transparent !important;
-  background-image: linear-gradient(to right,
-    var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
-  background-size: calc(100% / var(--merge-dash-count, 5)) var(--highlight-width);
-  background-position: left top;
-  background-repeat: repeat-x;
+/* Merge outlines are drawn as background images, not CSS borders:
+   all four sides use visible dash/gap patterns independent of border rendering. */
+#table-container.merge-range-highlight .tabulator-cell:is(.st-row-top, .st-row-left, .st-row-right) {
+  --merge-top-image: none;
+  --merge-left-image: none;
+  --merge-right-image: none;
+  --merge-bottom-image: none;
+  background-image:
+    var(--merge-top-image),
+    var(--merge-left-image),
+    var(--merge-right-image),
+    var(--merge-bottom-image) !important;
+  background-size:
+    calc(100% / var(--merge-dash-count, 5)) var(--highlight-width),
+    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2)),
+    var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2)),
+    calc(100% / var(--merge-dash-count, 5)) var(--highlight-width);
+  background-position: left top, left top, right top, left bottom;
+  background-repeat: repeat-x, repeat-y, repeat-y, repeat-x;
   background-origin: border-box;
   background-clip: border-box;
 }
-/* Native dashed borders can appear solid on these short Tabulator rows.
-   Draw the vertical strokes explicitly, scaled to each row height. */
+#table-container.merge-range-highlight .tabulator-cell.st-row-top {
+  --merge-top-image: linear-gradient(to right,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
+  border-top-color: transparent !important;
+}
 #table-container.merge-range-highlight .tabulator-cell.st-row-left {
+  --merge-left-image: linear-gradient(to bottom,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
   border-left-color: transparent !important;
 }
 #table-container.merge-range-highlight .tabulator-cell.st-row-right {
+  --merge-right-image: linear-gradient(to bottom,
+    var(--stat-highlight-color) 0 60%, transparent 60% 100%);
   border-right-color: transparent !important;
 }
-#table-container.merge-range-highlight .tabulator-cell.st-row-left::after,
-#table-container.merge-range-highlight .tabulator-cell.st-row-right::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: var(--highlight-width);
-  pointer-events: none;
-  z-index: 2;
-  background-image: linear-gradient(to bottom,
+#table-container.merge-range-pending .tabulator-cell.st-row-bottom {
+  --merge-bottom-image: linear-gradient(to right,
     var(--stat-highlight-color) 0 60%, transparent 60% 100%);
-  background-size: var(--highlight-width) calc(100% / var(--merge-side-dash-count, 2));
-  background-repeat: repeat-y;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-row-left::after {
-  left: 0;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-row-right::after {
-  right: 0;
-}
-#table-container.merge-range-pending .tabulator-cell.st-row-top.st-row-bottom {
   border-bottom-color: transparent !important;
-  background-image:
-    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%),
-    linear-gradient(to right, var(--stat-highlight-color) 0 60%, transparent 60% 100%) !important;
-  background-position: left top, left bottom;
 }
-
 </style>
       
 </head>
