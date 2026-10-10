@@ -2076,19 +2076,12 @@ function positionMergedRow() {
   if (!table || !mergeResultRow || !mergeSelection) return;
   const el = mergeResultRow.getElement?.();
   if (!el) return;
+  // Tabulator, not direct DOM reparenting, controls the row's position.
   el.classList.add("merge-result-row");
   const selected = new Set(mergeSelection.segments);
-  const visible = (table.getRows("active") || []).filter(r =>
+  const hasVisibleSources = (table.getRows("active") || []).some(r =>
     !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim()));
-  const anchor = visible.at(-1)?.getElement?.();
-  const holder = document.querySelector("#table-container .tabulator-table");
-  if (anchor?.isConnected && anchor !== el) {
-    anchor.insertAdjacentElement("afterend", el);
-    el.classList.remove("merge-result-alone");
-  } else if (holder) {
-    holder.appendChild(el);
-    el.classList.add("merge-result-alone");
-  }
+  el.classList.toggle("merge-result-alone", !hasVisibleSources);
 }
 
 function clearMergedRow() {
@@ -2112,7 +2105,14 @@ async function insertMergedRow(segments) {
   }
   clearMergedRow();
   try {
-    const row = await table.addRow(computed.data, false);
+    const selected = new Set(segments);
+    const visibleSources = (table.getRows("active") || []).filter(r =>
+      !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim()));
+    // Add after the last active source *through Tabulator itself*.
+    // Appending to the end and moving its bare DOM element produced an
+    // uninitialized, empty row whenever passage filters excluded it.
+    const anchor = visibleSources.at(-1) || null;
+    const row = await table.addRow(computed.data, false, anchor);
     mergeResultRow = row;
     mergeResultData = computed.data;
     positionMergedRow();
@@ -12551,6 +12551,11 @@ function hideSpinner() {
         resizable: false,
         virtualDom: false,
         pagination: false,
+        rowFormatter: function(row) {
+          if (row.getData()?.__mergeResult) {
+            row.getElement().classList.add("merge-result-row");
+          }
+        },
         headerFilterLiveFilterDelay: 600,
         initialSort: [{column: "Segment", dir: "asc"}],
         columnDefaults:{
