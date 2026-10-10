@@ -2137,6 +2137,7 @@ function setMergeMode(active, opts = {}) {
     clearAllGreenHighlights();
   }
 
+  clearMergedRow();
   clearAllStatHighlights();
   setMergeBorderState();
   mergeModeActive = !!active;
@@ -2159,6 +2160,10 @@ function handleMergeCellRightClick(row) {
   const seg = String(row.getData()?.Segment ?? "").trim();
   const currentIndex = activeRows.findIndex(r => String(r.getData()?.Segment ?? "").trim() === seg);
 
+  if (row.getData()?.__mergeResult) {
+    setMessage("Merge: please select original segments.");
+    return;
+  }
   if (!seg || currentIndex === -1) {
     setMessage("Merge: cannot select this row. Please choose a visible segment.");
     return;
@@ -2166,6 +2171,7 @@ function handleMergeCellRightClick(row) {
 
   // A new first click also replaces any previously completed selection.
   if (mergeFirstSegment === null) {
+    clearMergedRow();
     mergeSelection = null;
     mergeFirstSegment = seg;
     setMergeBorderState("pending");
@@ -2204,7 +2210,7 @@ function handleMergeCellRightClick(row) {
   mergeFirstSegment = null; // stay in Merge mode; the next two clicks can replace this range
   setMergeBorderState("complete");
   setStatHighlights(segments.map(segment => ({ kind: "row", segment })));
-  setMessage(`${segments.length} Segments (${firstSegment} - ${lastSegment}) selected for merging.`);
+  insertMergedRow(segments);
 }
 
 // --- Correlation mode state --------------------------------------------
@@ -8424,6 +8430,20 @@ function hideSpinner() {
         
         prevBasis = newBasis;
         newBasis = getBasis();
+
+        if (mergeResultData && mergeSelection && Array.isArray(dataXlsx)) {
+          const segments = mergeSelection.segments.slice();
+          const savedScroll = snapshotScroll(table);
+          mergeResultRow = null;
+          mergeResultData = null;
+          table.replaceData(JSON.parse(JSON.stringify(dataXlsx))).then(async () => {
+            if (newBasis !== "self") trendsRecalc("checkbox");
+            await insertMergedRow(segments);
+            restoreScroll(table, savedScroll);
+          });
+          set_table_title();
+          return;
+        }
         
         if (prevBasis !== "self" && newBasis !== "self") {
           const restored = JSON.parse(JSON.stringify(dataXlsx));
@@ -11311,6 +11331,7 @@ function hideSpinner() {
     }
         
     function menuSelectorClick(newBook, newLength, newScope, changeType, filter) {
+      if (mergeModeActive || mergeResultRow) setMergeMode(false, { silent: true });
       const stateDiv = document.getElementById("menustate");
       
       const messageEl = document.getElementById("message-row");
