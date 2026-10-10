@@ -32,7 +32,7 @@
 <script data-goatcounter="https://aeneidoscope.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>      
 -->
 
-<link rel="stylesheet" href="aeneidoscope.css?v=merge-border-20261010">
+<link rel="stylesheet" href="aeneidoscope.css?v=merge-solid-20261010">
 
       
 </head>
@@ -2853,33 +2853,7 @@ function applyStatHighlights() {
   if (!activeStatHighlights || !activeStatHighlights.length) return;
 
   applyHighlightLayer(activeStatHighlights, "st");
-
-  // For Merge, scale dash spacing to each top-border cell's actual width.
-  // A whole number of cycles per cell makes the dashed line join cleanly
-  // at column boundaries, including columns of different widths.
-  if (mergeModeActive) {
-    const holder = document.getElementById("table-container");
-    if (holder?.classList.contains("merge-range-highlight")) {
-      holder.querySelectorAll(".tabulator-cell.st-row-top").forEach(el => {
-        const width = el.getBoundingClientRect().width;
-        if (width > 0) {
-          el.style.setProperty("--merge-dash-count",
-            Math.max(1, Math.round(width / 20)));
-        }
-      });
-      holder.querySelectorAll(".tabulator-cell.st-row-left").forEach(el => {
-        const rowEl = el.closest(".tabulator-row");
-        if (!rowEl) return;
-        const height = rowEl.getBoundingClientRect().height;
-        if (height > 0) {
-          rowEl.style.setProperty("--merge-side-dash-count",
-            Math.max(2, Math.round(height / 16)));
-        }
-      });
-    }
-  }
 }
-
 
 function updateVersion() {
   const cell = document.getElementById("cell-versions");
