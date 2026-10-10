@@ -9248,6 +9248,7 @@ function hideSpinner() {
         headerFilterFunc: createBooleanHeaderFilterFunc("Segment"),
         cssClass: "segment",        
         cellClick: function (e, cell) {
+          if (cell.getRow().getData()?.__mergeResult) return;
         
           const messageEl = document.getElementById("message-row");
           setMessage("");
@@ -9347,6 +9348,7 @@ function hideSpinner() {
         frozen: true,        
         cssClass: "plot wrap-text plot-border-right plot-border-left",
         cellMouseEnter: function (e, cell) {
+          if (cell.getRow().getData()?.__mergeResult) return;
           mouseOnCell = true;
           if (!usePlotTooltip) return;
           const data = cell.getRow().getData();
@@ -9379,6 +9381,10 @@ function hideSpinner() {
           setTimeout(tryHideHoverPanel, 150); // small delay to avoid flicker
         },
         cellClick: function (e, cell) {
+          if (cell.getRow().getData()?.__mergeResult) {
+            toggleFocusRow(cell.getRow());
+            return;
+          }
           if (!usePlotFilter) return;
           
           const messageEl = document.getElementById("message-row");
@@ -12766,6 +12772,7 @@ function hideSpinner() {
       });      
       
       table.on("cellMouseEnter", function(e, cell){
+        if (cell.getRow().getData()?.__mergeResult) return;
       
         current_cell_link = "";
         
@@ -12923,6 +12930,7 @@ function hideSpinner() {
         _maybeArmTooltips();
         applyHighlights();   // re-paint any saved highlights after redraw
         applyStatHighlights();   // re-paint temporary purple stats highlights after redraw
+        positionMergedRow(); // keep synthetic row beneath its sources
         
         if (linkFilter !== "NONE" && setFilterOnReload) {
           table.setHeaderFilterValue("Scene", linkFilter);
