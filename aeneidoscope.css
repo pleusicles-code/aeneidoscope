@@ -1234,7 +1234,8 @@ body #corr-plottooltip.plottooltip { background: #fff; }
 .numeric-hidden:hover,
     .numeric-visible .numeric-hidden,
     .tabulator.numeric-visible-hi .tabulator-cell.hi-interior.numeric-hidden,
-    .tabulator.numeric-visible-st .tabulator-cell.st-interior.numeric-hidden {
+    .tabulator.numeric-visible-st .tabulator-cell.st-interior.numeric-hidden,
+    .tabulator.numeric-visible-st .tabulator-row.merge-source-row .tabulator-cell.numeric-hidden {
   color: var(--heat-color) !important;
 }
 
