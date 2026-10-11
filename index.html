@@ -2068,7 +2068,10 @@ function calculateMergedData(segments) {
     merged[field] = presentLength && (!rebase || denom !== 0)
       ? rebase ? Math.round(100 * numerator / denom) : Math.round(numerator / presentLength)
       : "";
-    if (periodOf.has(field) && presentLength < totalLength) partialCount++;
+    // Only genuinely partial numeric coverage warrants a note:
+    // all-empty commentaries have no merged value rather than a partial one.
+    // Presence-only fields have already been handled above and skipped.
+    if (periodOf.has(field) && presentLength > 0 && presentLength < totalLength) partialCount++;
   }
 
   // DYN shows the weighted Self-basis tradition, irrespective of current basis.
