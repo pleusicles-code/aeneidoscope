@@ -1507,13 +1507,13 @@ body #corr-plottooltip.plottooltip { background: #fff; }
     linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) bottom right;
 }
 
-/* ===== Merge: independent source and result outlines =====
-   Source segments each have a complete thin outline, even after sorting
-   moves them apart. The synthetic result has its own thick four-sided border.
-   Measure/Correlation continue to use the normal st-* perimeter styling. */
+/* ===== Merge: shared perimeter around contiguous source rows =====
+   Sorting/filtering divides a selection into separate visible runs.
+   The synthetic result keeps its distinct thick four-sided border.
+   Measure/Correlation retain their normal st-* perimeter styling. */
 #table-container {
   --merge-source-color: #b38cde;
-  --merge-source-width: 2px;
+  --merge-source-width: 1px;
 }
 
 #table-container .tabulator-row.merge-source-row,
@@ -1531,9 +1531,16 @@ body #corr-plottooltip.plottooltip { background: #fff; }
   box-sizing: border-box;
 }
 
-/* Each constituent row is outlined individually, not as one continuous range. */
+/* Draw the sides along every source row, but no internal horizontal edges. */
 #table-container .tabulator-row.merge-source-row::after {
-  border: var(--merge-source-width) solid var(--merge-source-color);
+  border-left: var(--merge-source-width) solid var(--merge-source-color);
+  border-right: var(--merge-source-width) solid var(--merge-source-color);
+}
+#table-container .tabulator-row.merge-source-row.merge-source-start::after {
+  border-top: var(--merge-source-width) solid var(--merge-source-color);
+}
+#table-container .tabulator-row.merge-source-row.merge-source-end::after {
+  border-bottom: var(--merge-source-width) solid var(--merge-source-color);
 }
 
 /* The result row is unmistakably distinct, regardless of current sorting. */
