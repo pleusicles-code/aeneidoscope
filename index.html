@@ -2028,10 +2028,17 @@ function calculateMergedData(segments) {
   if (lengths.some(w => !Number.isFinite(w) || w <= 0)) return null;
   const totalLength = lengths.reduce((a,b) => a+b, 0);
   const label = mergeRangeLabel(rows);
+  // Whole-book merges preserve the canonical length for tooltip display.
+  const bookMatches = rows.map(d => String(d.Segment ?? "").trim().match(/^Aen\.\s*(\d{1,2})$/i));
+  const canonicalLength = bookMatches.every(Boolean)
+    ? bookMatches.reduce((sum, m) => sum + (canonicalBookLengths[Number(m[1])] || 0), 0)
+    : null;
   const merged = {
     Segment: label, Plot: "MERGED SEGMENT", Length: totalLength,
     Index: "", Link: "", Scene: "", Section: "", Misc: "", Tags: "",
-    DYN: "", IVM: "", __mergeResult: true
+    DYN: "", IVM: "", __mergeResult: true,
+    __tooltipCharacters: {}, __tooltipCoverageLength: {},
+    __mergeCanonicalLength: canonicalLength
   };
   const periodOf = new Map();
   [period1Fields, period2Fields, period3Fields, period4Fields, period5Fields, period6Fields]
@@ -2046,6 +2053,19 @@ function calculateMergedData(segments) {
   for (const field of fields) {
     if (skip.has(field) || field.startsWith("copy_") || field.startsWith("cit_") ||
         field.startsWith("^link") || isGeneratedStatField(field)) continue;
+
+    // Store estimates from original Self-basis data, not rounded Merge values.
+    // Per-commentary covered lengths are cached but not displayed yet.
+    let coveredLength = 0, totalChars = 0, hasChars = false;
+    rows.forEach((d, i) => {
+      const value = _toNum(d[field]);
+      if (!Number.isFinite(value)) return;
+      coveredLength += lengths[i];
+      const chars = computeCharEstimateForRow(field, value, lengths[i], d.Segment, d);
+      if (Number.isFinite(chars)) { totalChars += chars; hasChars = true; }
+    });
+    if (coveredLength > 0) merged.__tooltipCoverageLength[field] = coveredLength;
+    if (hasChars) merged.__tooltipCharacters[field] = totalChars;
 
     if (isPresenceOnlyField(field) || field === "^Era2^") {
       const any = rows.some(d => d[field] != null && String(d[field]).trim() !== "" &&
@@ -2913,7 +2933,7 @@ function runStitchedRangeStats(field, activeRows, idxA, idxB) {
 
     if (checkLac === false) {
       if (typeof computeCharEstimateForRow === "function") {
-        charsHere = computeCharEstimateForRow(field, v, w);
+        charsHere = computeCharEstimateForRow(field, v, w, data.Segment);
       }
     } else {
       // checkLac may return a numeric override
@@ -3410,7 +3430,7 @@ window.runStitchForField = function (field) {
 
     //const [ttipHtml, l] = getDataTooltipCardForField(field, v, w, cell, field, data.Segment);
     
-    const charsHere = computeCharEstimateForRow(field, v, w);
+    const charsHere = computeCharEstimateForRow(field, v, w, data.Segment);
     totalChars += charsHere;
 
     weightedSum += v * w;
@@ -3452,28 +3472,53 @@ window.runStitchForField = function (field) {
   corrStartFade && corrStartFade([headerEl]);
 };
 
-function computeCharEstimateForRow(field, percentValue, segmentLength) {
-  // find metadata record just like tooltips do
-  let key = field.replace(/^\^|\^$/g, "");
-  const record = tooltipData.find(item => item.Key.includes(key));
-  if (!record) return 0;
+// Shared field-to-bibliography mapping.
+function getDataTooltipRecordForField(field) {
+  let key = String(field || "").replace(/^\^|\^$/g, "");
+  const aliases = {
+    AnsBNL: "calc_AnsBNL", AnsPr: "calc_AnsPr",
+    TCDLand1: "calc_TCDLand1", TCDLand2: "calc_TCDLand2",
+    Ho1: "calc_Ho1", Ho2: "calc_Ho2"
+  };
+  key = aliases[key] || key;
+  return tooltipData.find(item => String(item.Key || "").split(/\s+/).includes(key)) || null;
+}
 
-  const charRatio = Number(record.CharRatio) || 0;
+function getBookNumberFromSegment(segment) {
+  const m = String(segment || "").trim().match(/^(?:Aen\.\s*)?(\d{1,2})(?:\.|$)/i);
+  return m ? Number(m[1]) : null;
+}
 
-  // pick AVG depending on scope
-  let calcAvg;
-  if ((selectedBook == 0 || selectedScope === "global") && record.AVG0 !== "force_local") {
-    calcAvg = Number(record.AVG0);
-  } else {
-    calcAvg = Number(record["AVG" + selectedBook]);
+// Null means that a character estimate is inapplicable or unavailable.
+// Merge supplies each constituent's original value, length and source row.
+function computeCharEstimateForRow(field, percentValue, segmentLength, segment = null, sourceRow = null) {
+  if (isPresenceOnlyField(field) || ["^Bra^", "^Era^"].includes(field)) return null;
+  const pct = _toNum(percentValue), length = _toNum(segmentLength);
+  if (!Number.isFinite(pct) || !Number.isFinite(length) || length <= 0) return null;
+  const book = getBookNumberFromSegment(segment) ||
+    (selectedBook >= 1 && selectedBook <= 12 ? selectedBook : null);
+  const useGlobal = selectedBook == 0 || selectedScope === "global";
+  const record = getDataTooltipRecordForField(field);
+  if (!record) return null;
+
+  if (field === "^TCDLand1^" || field === "^TCDLand2^") {
+    // Both columns represent the same epitome of Donatus.
+    const donatus = _toNum(sourceRow?.TCD);
+    const retained = _toNum(sourceRow?.["^TCDLand1^"]);
+    const donatusRecord = getDataTooltipRecordForField("TCD");
+    const avg = _toNum(useGlobal ? donatusRecord?.AVG0 : donatusRecord?.["AVG" + book]);
+    return Number.isFinite(donatus) && Number.isFinite(retained) && Number.isFinite(avg)
+      ? Math.round(donatus * length * avg * retained / 10000) : null;
   }
-
-  if (!calcAvg) return 0;
-
-  // Core formula
-  const result = Math.round(percentValue * segmentLength * calcAvg * charRatio / 100);
-
-  return result;
+  if (selectedBook == 0) {
+    const override = checkForBooksWithLacuna(field, segment);
+    if (override !== false) return override;
+  }
+  const avg = _toNum(useGlobal && record.AVG0 !== "force_local"
+    ? record.AVG0 : record["AVG" + book]);
+  const ratio = _toNum(record.CharRatio);
+  return Number.isFinite(avg) && Number.isFinite(ratio)
+    ? Math.round(pct * length * avg * ratio / 100) : null;
 }
 
 // Reuse the STDEV/Statistical Profile logic without user interaction
@@ -3533,7 +3578,7 @@ window.runProfileForField = function (field) {
       const checkLac = checkForBooksWithLacuna(field, seg);
           if (checkLac == false) {
             if (typeof computeCharEstimateForRow === "function") {
-              charsHere = computeCharEstimateForRow(field, v, w);
+              charsHere = computeCharEstimateForRow(field, v, w, data.Segment);
             }
           } else {
             charsHere = checkLac
@@ -6924,19 +6969,12 @@ function hideSpinner() {
             calcAvg = record["AVG" + selectedBook];
           }
         } 
-        commSegmentLengthChar = Math.round(segmentPercentage*segmentLength*calcAvg*charRatio/100);
-        
-        if (selectedBook == 0) {
-          const cellComponent = getCellComponentFromDom(cell);
-          const rowData = cellComponent ? cellComponent.getRow().getData() : {};        
-          const checkLac = checkForBooksWithLacuna(field, rowData.Segment);
-          if (checkLac !== false) {
-            commSegmentLengthChar = checkLac;
-          }
-        }
-        
+        commSegmentLengthChar =
+          computeCharEstimateForRow(field, segmentPercentage, segmentLength, segment);
+
         if (key !== "Era") {
-          commSegmentLengthCharStr = formatCustomNumber(commSegmentLengthChar);          
+          commSegmentLengthCharStr = Number.isFinite(commSegmentLengthChar)
+            ? formatCustomNumber(commSegmentLengthChar) : "–";          
         } else {
           commSegmentLengthCharStr = commSegmentLengthChar;                  
         }         
