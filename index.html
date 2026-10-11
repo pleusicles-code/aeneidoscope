@@ -512,7 +512,7 @@ let correlationModeActive = false;      // true → repeated correlation picking
 let mergeModeActive       = false;      // true → two row endpoints for a merged segment
 let measureFirstCell      = null;       // { rowIndex, seg, field } for first corner
 let mergeFirstSegment     = null;       // Segment identifier of the first picked row
-let mergeSelection        = null;       // { segments, firstSegment, lastSegment, count }
+let mergeSelection        = null;       // { segments, firstSegment, lastSegment, count, sortAtMerge }
 let activeStatHighlights  = [];         // temporary purple highlight layer
 
 
@@ -2115,12 +2115,29 @@ function positionMergedRow() {
   if (!table || !mergeResultRow || !mergeSelection) return;
   const el = mergeResultRow.getElement?.();
   if (!el) return;
-  // Tabulator, not direct DOM reparenting, controls the row's position.
   el.classList.add("merge-result-row");
   const selected = new Set(mergeSelection.segments);
-  const hasVisibleSources = (table.getRows("active") || []).some(r =>
+  const rows = table.getRows("active") || [];
+  const hasVisibleSources = rows.some(r =>
     !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim()));
   el.classList.toggle("merge-result-alone", !hasVisibleSources);
+
+  // Only under the exact original sort, keep the result directly below the
+  // selected range. Under other sorts it participates by its numeric values.
+  const originalSort = mergeSelection.sortAtMerge;
+  if (!originalSort?.length) return;
+  const currentSort = table.getSorters() || [];
+  if (currentSort.length !== originalSort.length ||
+      currentSort.some((sorter, i) =>
+        sorter.field !== originalSort[i].field || sorter.dir !== originalSort[i].dir)) return;
+
+  const lastSource = rows.filter(r =>
+    !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim())).at(-1);
+  const resultIndex = rows.indexOf(mergeResultRow);
+  if (!lastSource || resultIndex < 0 || rows[resultIndex - 1] === lastSource) return;
+
+  // Use Tabulator's row-moving API, never reparent its rendered DOM rows.
+  table.moveRow(mergeResultRow, lastSource, false); // false = below target
 }
 
 function clearMergedRow() {
@@ -2173,7 +2190,8 @@ function snapshotMergeForScopeChange() {
   if (!mergeModeActive) return null;
   return {
     firstSegment: mergeFirstSegment,
-    segments: mergeSelection ? mergeSelection.segments.slice() : null
+    segments: mergeSelection ? mergeSelection.segments.slice() : null,
+    sortAtMerge: mergeSelection?.sortAtMerge?.map(s => ({ field: s.field, dir: s.dir })) ?? null
   };
 }
 
@@ -2204,7 +2222,8 @@ async function restoreMergeAfterScopeChange(snapshot) {
       segments: selectedSegments.slice(),
       firstSegment: selectedSegments[0],
       lastSegment: selectedSegments[selectedSegments.length - 1],
-      count: selectedSegments.length
+      count: selectedSegments.length,
+      sortAtMerge: snapshot.sortAtMerge ?? table.getSorters().map(s => ({ field: s.field, dir: s.dir }))
     };
     mergeFirstSegment = null;
     setMergeBorderState("complete");
@@ -2302,7 +2321,10 @@ function handleMergeCellRightClick(row) {
   const firstSegment = segments[0];
   const lastSegment = segments[segments.length - 1];
 
-  mergeSelection = { segments, firstSegment, lastSegment, count: segments.length };
+  mergeSelection = {
+    segments, firstSegment, lastSegment, count: segments.length,
+    sortAtMerge: table.getSorters().map(s => ({ field: s.field, dir: s.dir }))
+  };
   mergeFirstSegment = null; // stay in Merge mode; the next two clicks can replace this range
   setMergeBorderState("complete");
   setStatHighlights(segments.map(segment => ({ kind: "row", segment })));
@@ -13083,7 +13105,7 @@ function hideSpinner() {
         _maybeArmTooltips();
         applyHighlights();   // re-paint any saved highlights after redraw
         applyStatHighlights();   // re-paint temporary purple stats highlights after redraw
-        positionMergedRow(); // keep synthetic row beneath its sources
+        positionMergedRow(); // restore saved Merge placement only under its original sort
         
         if (linkFilter !== "NONE" && setFilterOnReload) {
           table.setHeaderFilterValue("Scene", linkFilter);
