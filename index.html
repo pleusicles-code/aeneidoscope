@@ -2158,6 +2158,62 @@ async function insertMergedRow(segments) {
   }
 }
 
+// Scope changes retain exact Segment identities, not an interval between
+// endpoints: row sorting may change between Global and Local views.
+function snapshotMergeForScopeChange() {
+  if (!mergeModeActive) return null;
+  return {
+    firstSegment: mergeFirstSegment,
+    segments: mergeSelection ? mergeSelection.segments.slice() : null
+  };
+}
+
+async function restoreMergeAfterScopeChange(snapshot) {
+  if (!snapshot || !table) return;
+
+  const selectedSegments = snapshot.segments || [];
+  const requested = selectedSegments.length ? selectedSegments :
+    (snapshot.firstSegment ? [snapshot.firstSegment] : []);
+  const presentInData = new Set((dataXlsx || []).map(d =>
+    String(d.Segment ?? "").trim()));
+  const visible = new Set((table.getRows("active") || [])
+    .filter(row => !row.getData()?.__mergeResult)
+    .map(row => String(row.getData()?.Segment ?? "").trim()));
+
+  // Do not silently replace a saved selection with newly intervening rows.
+  if (requested.some(seg => !presentInData.has(seg) || !visible.has(seg))) {
+    setMessage("Merge cancelled: one or more previously selected segments " +
+      "are unavailable or hidden in the new scope. No replacement range was selected.");
+    return;
+  }
+
+  setMergeMode(true, { silent: true });
+
+  if (selectedSegments.length) {
+    // Preserve the exact saved set even if the row ordering has changed.
+    mergeSelection = {
+      segments: selectedSegments.slice(),
+      firstSegment: selectedSegments[0],
+      lastSegment: selectedSegments[selectedSegments.length - 1],
+      count: selectedSegments.length
+    };
+    mergeFirstSegment = null;
+    setMergeBorderState("complete");
+    setStatHighlights(selectedSegments.map(segment => ({ kind: "row", segment })));
+    await insertMergedRow(selectedSegments);
+  } else if (snapshot.firstSegment) {
+    mergeFirstSegment = snapshot.firstSegment;
+    setMergeBorderState("pending");
+    setStatHighlights([{ kind: "row", segment: snapshot.firstSegment }]);
+    setMessage("Merge: first segment <strong>" + snapshot.firstSegment +
+      "</strong> preserved after scope change. Right-click a cell in a " +
+      "<strong>different row</strong> to complete the range.");
+  } else {
+    setMessage("Merge mode active: right-click <strong>two cells</strong> " +
+      "<strong>in different rows</strong> to select the first and last segment to be merged.");
+  }
+}
+
 function setMergeMode(active, opts = {}) {
   const { silent = false } = opts;
 
