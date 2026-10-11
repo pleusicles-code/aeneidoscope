@@ -1506,54 +1506,38 @@ body #corr-plottooltip.plottooltip { background: #fff; }
     linear-gradient(var(--stat-highlight-color), var(--stat-highlight-color)) bottom right;
 }
 
-/* ===== Merge picker source outlines =====
-   Subdued 2px borders distinguish the source rows from the heavier 4px
-   purple seam beneath them (future top edge of the synthetic merged row).
-   Pending single-row selection uses the subdued border on all four sides.
-   Ordinary Measure/Correlation highlights are unaffected. */
-#table-container.merge-range-highlight {
+/* ===== Merge: independent source and result outlines =====
+   Source segments each have a complete thin outline, even after sorting
+   moves them apart. The synthetic result has its own thick four-sided border.
+   Measure/Correlation continue to use the normal st-* perimeter styling. */
+#table-container {
   --merge-source-color: #b38cde;
   --merge-source-width: 2px;
-  --merge-seam-color: var(--stat-highlight-color);
-  --merge-seam-width: 4px;
 }
 
-#table-container.merge-range-highlight .tabulator-cell.st-row-top {
-  border-top: var(--merge-source-width) solid var(--merge-source-color) !important;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-col-left {
-  border-left: var(--merge-source-width) solid var(--merge-source-color) !important;
-}
-#table-container.merge-range-highlight .tabulator-cell.st-col-right {
-  border-right: var(--merge-source-width) solid var(--merge-source-color) !important;
-}
-
-/* Once both endpoints are picked, this is the prominent join to MERGE. */
-#table-container.merge-range-highlight .tabulator-cell.st-row-bottom {
-  border-bottom: var(--merge-seam-width) solid var(--merge-seam-color) !important;
-}
-/* Before the second click, the first picked row gets a uniform outline. */
-#table-container.merge-range-pending .tabulator-cell.st-row-bottom {
-  border-bottom: var(--merge-source-width) solid var(--merge-source-color) !important;
-}
-
-/* Synthetic Merge result: its top seam is already drawn on the final
-   source row. The other three sides use the stronger statistics purple. */
+#table-container .tabulator-row.merge-source-row,
 #table-container .tabulator-row.merge-result-row {
   position: relative;
 }
+
+#table-container .tabulator-row.merge-source-row::after,
 #table-container .tabulator-row.merge-result-row::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 31;
-  border: 4px solid var(--stat-highlight-color);
-  border-top: 0;
   box-sizing: border-box;
 }
-#table-container .tabulator-row.merge-result-row.merge-result-alone::after {
-  border-top: 4px solid var(--stat-highlight-color);
+
+/* Each constituent row is outlined individually, not as one continuous range. */
+#table-container .tabulator-row.merge-source-row::after {
+  border: var(--merge-source-width) solid var(--merge-source-color);
+}
+
+/* The result row is unmistakably distinct, regardless of current sorting. */
+#table-container .tabulator-row.merge-result-row::after {
+  border: 4px solid var(--stat-highlight-color);
 }
 #table-container .tabulator-row.merge-result-row .tabulator-cell[tabulator-field="Plot"] {
   font-weight: 700;
