@@ -2178,7 +2178,7 @@ async function insertMergedRow(segments) {
       ? '<div style="font-size:0.85em;margin-top:3px;">Note: Some commentaries cover only part of this range. Their values, and their Period/TYP reference values, use only available segments.</div>'
       : "";
     setMessage("<strong>" + segments.length + "</strong> Segments merged into <strong>" +
-      computed.label + "</strong> (" + computed.totalLength + " lines)." + note);
+      computed.label + "</strong> (" + Number(computed.totalLength.toFixed(1)) + " lines)." + note);
   } catch (e) {
     console.error("Merge insertion failed", e);
     setMessage("Merge: calculation succeeded, but the merged row could not be displayed.");
