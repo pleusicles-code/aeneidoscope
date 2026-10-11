@@ -2133,8 +2133,9 @@ function positionMergedRow() {
 
   const lastSource = rows.filter(r =>
     !r.getData()?.__mergeResult && selected.has(String(r.getData()?.Segment ?? "").trim())).at(-1);
-  const resultIndex = rows.indexOf(mergeResultRow);
-  if (!lastSource || resultIndex < 0 || rows[resultIndex - 1] === lastSource) return;
+  const resultIndex = rows.findIndex(r => r.getData()?.__mergeResult);
+  if (!lastSource || resultIndex < 0 ||
+      rows[resultIndex - 1]?.getData()?.Segment === lastSource.getData()?.Segment) return;
 
   // Use Tabulator's row-moving API, never reparent its rendered DOM rows.
   table.moveRow(mergeResultRow, lastSource, false); // false = below target
