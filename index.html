@@ -417,6 +417,23 @@ const canonicalBookLengths = [
   952
 ];
 
+// Missing Aeneid lines within individual commentary books.
+// These adjust tooltip lengths, not the underlying shared row lengths or
+// commentary attention calculations.
+const BOOK_LACUNAE = {
+  TCD: { 4: 235.5, 7: 42, 8: 278, 12: 173.5 },
+  "^BS^": { 6: 265 },
+  Leo: { 6: 401 }
+};
+
+function getBookLacunaLength(field, segment) {
+  // Deliberately limit this correction to whole-book rows, not scenes/passages.
+  const match = String(segment ?? "").trim().match(/^Aen\.\s*(\d{1,2})$/i);
+  if (!match) return 0;
+  const missing = BOOK_LACUNAE[field]?.[Number(match[1])];
+  return Number.isFinite(missing) && missing >= 0 ? missing : 0;
+}
+
 // PERIODFIELDS
 
 const period1Fields = ["IVM", "Ser", "^Co^", "DS", "TCD", "^sV^", "^Fulg^"];
@@ -2038,7 +2055,7 @@ function calculateMergedData(segments) {
     Index: "", Link: "", Scene: "", Section: "", Misc: "", Tags: "",
     DYN: "", IVM: "", __mergeResult: true,
     __tooltipCharacters: {}, __tooltipCoverageLength: {},
-    __mergeCanonicalLength: canonicalLength
+    __tooltipLacunaLength: {}, __mergeCanonicalLength: canonicalLength
   };
   const periodOf = new Map();
   [period1Fields, period2Fields, period3Fields, period4Fields, period5Fields, period6Fields]
@@ -2056,15 +2073,18 @@ function calculateMergedData(segments) {
 
     // Store estimates from original Self-basis data, not rounded Merge values.
     // Per-commentary covered lengths are cached but not displayed yet.
-    let coveredLength = 0, totalChars = 0, hasChars = false;
+    let coveredLength = 0, missingLines = 0, totalChars = 0, hasChars = false;
     rows.forEach((d, i) => {
       const value = _toNum(d[field]);
       if (!Number.isFinite(value)) return;
-      coveredLength += lengths[i];
+      const lacuna = getBookLacunaLength(field, d.Segment);
+      coveredLength += lengths[i] - lacuna;
+      missingLines += lacuna;
       const chars = computeCharEstimateForRow(field, value, lengths[i], d.Segment, d);
       if (Number.isFinite(chars)) { totalChars += chars; hasChars = true; }
     });
     if (coveredLength > 0) merged.__tooltipCoverageLength[field] = coveredLength;
+    if (missingLines > 0) merged.__tooltipLacunaLength[field] = missingLines;
     if (hasChars) merged.__tooltipCharacters[field] = totalChars;
 
     if (isPresenceOnlyField(field) || field === "^Era2^") {
@@ -6091,7 +6111,8 @@ function hideSpinner() {
       const canonical = rowData.__mergeCanonicalLength;
       let lengthDisplay = String(Number(effectiveLength.toFixed(1)));
       if (Number.isFinite(canonical) && canonical > 0) {
-        const delta = Number((effectiveLength - canonical).toFixed(1));
+        const lacuna = rowData.__tooltipLacunaLength?.[field] ?? 0;
+        const delta = Number((effectiveLength - canonical - lacuna).toFixed(1));
         const signedDelta = (delta < 0 ? "−" : "+") + Math.abs(delta).toFixed(1);
         lengthDisplay = canonical +
           ' <span style="font-size: 0.6em; position: relative; top: -3px;">(' +
@@ -6903,7 +6924,8 @@ function hideSpinner() {
           const computedLength = Number(segmentLength);
 
           if (canonicalLength && Number.isFinite(computedLength)) {
-            const difference = computedLength - canonicalLength;
+            const difference = computedLength - canonicalLength -
+              getBookLacunaLength(field, segment);
             const differenceStr =
               (difference < 0 ? "−" : "+") + Math.abs(difference).toFixed(1);
 
