@@ -3990,6 +3990,7 @@ function countZerosInActive(field) {
 // In correlation calculations:
 //   presence = 100
 //   absence  = 0
+const PRESENCE_ONLY_BG = "#A9DACC"; // seafoam teal, distinct from heatmap and statistical highlights
 const PRESENCE_ONLY_FIELDS = new Set([
   "^sV^",
   "^Bero^",
@@ -12100,7 +12101,7 @@ function hideSpinner() {
             if (isPresenceOnlyField(field) && String(value) === "100") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12110,7 +12111,7 @@ function hideSpinner() {
             if (field === "^sV^" && String(value) === "100") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12120,7 +12121,7 @@ function hideSpinner() {
             if (field === "^Bero^" && String(value) === "100") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12130,7 +12131,7 @@ function hideSpinner() {
             if (field === "^Hex^" && String(value) === "300") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12140,7 +12141,7 @@ function hideSpinner() {
             if (field === "^Hex^" && String(value) === "200") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12150,7 +12151,7 @@ function hideSpinner() {
             if (field === "^Hex^" && String(value) === "100") {
               const el = cell.getElement();
 
-              el.style.backgroundColor = "#ded2ee";
+              el.style.backgroundColor = PRESENCE_ONLY_BG;
               el.style.color = "#000000";
               el.classList.add("numeric-hidden");
 
@@ -12170,7 +12171,7 @@ function hideSpinner() {
               if (value !== "") {
                 const el = cell.getElement();
 
-                el.style.backgroundColor = "#ded2ee";
+                el.style.backgroundColor = PRESENCE_ONLY_BG;
                 el.style.color = "#000000";
                 el.classList.add("numeric-hidden");
 
@@ -12183,7 +12184,7 @@ function hideSpinner() {
               if (value !== "") {
                 const el = cell.getElement();
 
-                el.style.backgroundColor = "#ded2ee";
+                el.style.backgroundColor = PRESENCE_ONLY_BG;
                 el.style.color = "#000000";
                 el.classList.add("numeric-hidden");
 
