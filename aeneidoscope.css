@@ -1513,7 +1513,7 @@ body #corr-plottooltip.plottooltip { background: #fff; }
    Measure/Correlation retain their normal st-* perimeter styling. */
 #table-container {
   --merge-source-color: #b38cde;
-  --merge-source-width: 1px;
+  --merge-source-width: 2px;
 }
 
 #table-container .tabulator-row.merge-source-row,
