@@ -1664,10 +1664,11 @@ function clearStatHighlightClasses() {
     classesToRemove.forEach(cls => el.classList.remove(cls));
   });
 
-  // Merge selections use per-row outlines rather than the usual joined
-  // statistics perimeter. Remove them on redraw, reselection or exit.
+  // Remove Merge source outlines and their visible-group boundary flags.
   document.querySelectorAll("#table-container .tabulator-row.merge-source-row")
-    .forEach(el => el.classList.remove("merge-source-row"));
+    .forEach(el => el.classList.remove(
+      "merge-source-row", "merge-source-start", "merge-source-end"
+    ));
 }
 
 function syncStatsTitleVisual() {
@@ -3137,16 +3138,25 @@ function applyStatHighlights() {
   if (!activeStatHighlights || !activeStatHighlights.length) return;
 
   if (mergeModeActive) {
-    // Unlike Measure/Correlation, Merge outlines every selected source row
-    // individually. Identifiers remain stable when sorting separates them.
+    // Draw only the outside of each contiguous run of selected source rows.
+    // Sorting/filtering automatically splits a run into individually outlined
+    // rows wherever other rows intervene. The synthetic result is not a source.
     const segments = new Set(activeStatHighlights
       .filter(h => h.kind === "row")
       .map(h => String(h.segment ?? "").trim()));
-    (table.getRows("active") || []).forEach(row => {
+    const rows = table.getRows("active") || [];
+    const selected = rows.map(row => {
       const data = row.getData();
-      if (!data?.__mergeResult && segments.has(String(data?.Segment ?? "").trim())) {
-        row.getElement()?.classList.add("merge-source-row");
-      }
+      return !data?.__mergeResult &&
+        segments.has(String(data?.Segment ?? "").trim());
+    });
+    rows.forEach((row, index) => {
+      if (!selected[index]) return;
+      const el = row.getElement();
+      if (!el) return;
+      el.classList.add("merge-source-row");
+      if (!selected[index - 1]) el.classList.add("merge-source-start");
+      if (!selected[index + 1]) el.classList.add("merge-source-end");
     });
     return;
   }
