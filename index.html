@@ -11435,6 +11435,11 @@ function hideSpinner() {
     }
         
     function menuSelectorClick(newBook, newLength, newScope, changeType, filter) {
+      const scopeMergeSnapshot =
+        changeType === "scope" && newBook == selectedBook &&
+        newLength === selectedLength && newScope !== selectedScope
+          ? snapshotMergeForScopeChange()
+          : null;
       if (mergeModeActive || mergeResultRow) setMergeMode(false, { silent: true });
       const stateDiv = document.getElementById("menustate");
       
@@ -11564,9 +11569,14 @@ function hideSpinner() {
               }
             } else {
               attachTooltipListeners();
-              table.replaceData(data).then(() => {
-                  if (newBasis !== "self") {
-                    trendsRecalc("checkbox"); // or "trendsonly"
+              table.replaceData(data).then(async () => {
+                  if (scopeMergeSnapshot) {
+                    // Wait until the new scope's basis values have been applied.
+                    // Programmatic radio clicks would replace the merged row again.
+                    if (newBasis !== "self") await trendsRecalc("checkbox");
+                    await restoreMergeAfterScopeChange(scopeMergeSnapshot);
+                  } else if (newBasis !== "self") {
+                    trendsRecalc("checkbox"); // retain existing non-Merge behavior
                     const rebuildBasis = newBasis;
                     document.getElementById("optbasisself").click();
                     if (rebuildBasis === "typ") {
@@ -11574,6 +11584,11 @@ function hideSpinner() {
                     } else if (rebuildBasis === "period") {
                       document.getElementById("optbasisperiod").click();
                     }
+                  }
+              }).catch(error => {
+                  console.error("Error updating table after scope change:", error);
+                  if (scopeMergeSnapshot) {
+                    setMessage("Merge could not be restored after the scope change.");
                   }
               });
             }
@@ -11675,12 +11690,13 @@ function hideSpinner() {
           snapshotOriginalPercentages();
         }      
         
-        table.getRows().forEach(row => {
+        const rowUpdates = table.getRows().map(row => {
           const data = row.getData();
           applyRecalculation(data);
-          row.update(data);
+          return row.update(data);
         });
-        
+        return Promise.all(rowUpdates);
+
       } else if (mode === "trendsonly") {
         table.getRows().forEach(row => {
           const data = row.getData();
