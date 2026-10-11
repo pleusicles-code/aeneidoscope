@@ -1543,6 +1543,15 @@ body #corr-plottooltip.plottooltip { background: #fff; }
   border-bottom: var(--merge-source-width) solid var(--merge-source-color);
 }
 
+/* At the boundary between a source and its merged result, let the
+   4px result border replace (rather than add to) the 2px source edge. */
+#table-container .tabulator-row.merge-source-row.merge-source-end:has(+ .tabulator-row.merge-result-row)::after {
+  border-bottom-width: 0;
+}
+#table-container .tabulator-row.merge-result-row + .tabulator-row.merge-source-row.merge-source-start::after {
+  border-top-width: 0;
+}
+
 /* The result row is unmistakably distinct, regardless of current sorting. */
 #table-container .tabulator-row.merge-result-row::after {
   border: 4px solid var(--stat-highlight-color);
