@@ -2073,7 +2073,7 @@ function calculateMergedData(segments) {
         field.startsWith("^link") || isGeneratedStatField(field)) continue;
 
     // Store estimates from original Self-basis data, not rounded Merge values.
-    // Per-commentary covered lengths are cached but not displayed yet.
+    // The merged tooltip uses these covered lengths (including book lacunae).
     let coveredLength = 0, missingLines = 0, totalChars = 0, hasChars = false;
     rows.forEach((d, i) => {
       const value = _toNum(d[field]);
@@ -6104,16 +6104,23 @@ function hideSpinner() {
     
     function getMergedDataTooltipCardForField(field, cellContent, rowData, record) {
       if (!record) return "";
-      const effectiveLength = Number(rowData.Length);
-      if (!Number.isFinite(effectiveLength)) return "";
+      const totalLength = Number(rowData.Length);
+      if (!Number.isFinite(totalLength)) return "";
 
-      // Follow the ordinary book tooltip's canonical + adjustment convention
-      // when every constituent is a complete book; otherwise show actual length.
+      // The cached commentary-specific length excludes missing source segments
+      // and known book lacunae. Do not deduct either a second time here.
+      // Presence-only fields cannot distinguish missing coverage from a
+      // genuine absence of notes, so retain the common segment length.
+      const coverage = rowData.__tooltipCoverageLength?.[field];
+      const effectiveLength = !isPresenceOnlyField(field) && Number.isFinite(coverage)
+        ? coverage : totalLength;
+
+      // For complete books, show canonical total plus coverage adjustment.
+      // For scenes/passages, display the covered length directly.
       const canonical = rowData.__mergeCanonicalLength;
       let lengthDisplay = String(Number(effectiveLength.toFixed(1)));
       if (Number.isFinite(canonical) && canonical > 0) {
-        const lacuna = rowData.__tooltipLacunaLength?.[field] ?? 0;
-        const delta = Number((effectiveLength - canonical - lacuna).toFixed(1));
+        const delta = Number((effectiveLength - canonical).toFixed(1));
         const signedDelta = (delta < 0 ? "−" : "+") + Math.abs(delta).toFixed(1);
         lengthDisplay = canonical +
           ' <span style="font-size: 0.6em; position: relative; top: -3px;">(' +
