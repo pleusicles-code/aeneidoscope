@@ -7869,13 +7869,15 @@ function hideSpinner() {
         headingCell.colSpan = 7;
         headingCell.textContent = "Based on:";
         headingCell.style.fontWeight = "bold";
-        headingCell.style.textAlign = "center";
+        headingCell.style.textAlign = "left";
         headingCell.style.border = "none";
+        headingCell.style.borderTop = "1px solid black";
+        headingCell.style.padding = "4px 0 2px";
 
         const valuesRow = countTable.insertRow();
         [...periodCounts, typCount].forEach((count, index) => {
           const cell = valuesRow.insertCell();
-          cell.textContent = String(count);
+          cell.textContent = index === 6 ? "Σ" + count : String(count);
           cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
           cell.style.border = "none";
@@ -7887,7 +7889,7 @@ function hideSpinner() {
         footerCell.colSpan = 7;
         footerCell.textContent = "commentaries";
         footerCell.style.fontWeight = "bold";
-        footerCell.style.textAlign = "center";
+        footerCell.style.textAlign = "right";
         footerCell.style.border = "none";
 
         countContainer.appendChild(countTable);
