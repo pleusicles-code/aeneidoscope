@@ -7888,7 +7888,7 @@ function hideSpinner() {
         const valuesRow = countTable.insertRow();
         [...periodCounts, typCount].forEach((count, index) => {
           const cell = valuesRow.insertCell();
-          cell.textContent = index === 6 ? "Σ" + count : String(count);
+          cell.textContent = String(count);
           cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
           cell.style.border = "none";
@@ -7959,7 +7959,7 @@ function hideSpinner() {
         [...values, anyCount ? total : null].forEach((count, index, allValues) => {
           const cell = valuesRow.insertCell();
           const isTotal = index === allValues.length - 1;
-          cell.textContent = (isTotal ? "Σ" : "") + (count === null ? "–" : String(count));
+          cell.textContent = count === null ? "–" : String(count);
           cell.style.textAlign = isTotal ? "right" : "center";
           cell.style.padding = "2px 0";
           cell.style.border = "none";
@@ -12717,7 +12717,7 @@ function hideSpinner() {
         typLine = `
           <line x1="0" y1="${y}" x2="${typEndX + 3}" y2="${y}" stroke="black" stroke-width="1" stroke-dasharray="2,2" />
           <rect x="${typEndX - 6}" y="${yTYP - 3}" width="${svgWidth - typEndX + 5}" height="10" fill="${color}" stroke="black" stroke-width="0" stroke-dasharray="2,2" />
-          <text x="${typEndX + typShift - 5}" y="${yTYP + 5}" font-size="7" font-weight="300" fill="${fontColor}">
+          <text x="${typEndX + typShift - 5}" y="${yTYP + 5}" font-size="7" font-weight="700" fill="${fontColor}">
             ${Math.round(typ)}
           </text>
         `;
@@ -12859,7 +12859,7 @@ function hideSpinner() {
         typLine = `
           <line x1="0" y1="${y}" x2="${typEndX}" y2="${y}" stroke="black" stroke-width="1" stroke-dasharray="2,2" />
           <rect x="${typEndX - 7}" y="${yIVM - 3}" width="${svgWidth - typEndX + 6}" height="10" fill="${color}" stroke="white" stroke-width="0" stroke-dasharray="2,2" />
-          <text x="${typEndX + typShift - 5}" y="${yIVM + 5}" font-size="7" font-weight="300" fill="${fontColor}">
+          <text x="${typEndX + typShift - 5}" y="${yIVM + 5}" font-size="7" font-weight="700" fill="${fontColor}">
             ${Math.round(ivm)}
           </text>
           
