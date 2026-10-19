@@ -7866,6 +7866,15 @@ function hideSpinner() {
         countTable.style.borderCollapse = "collapse";
         countTable.style.border = "1px solid black";
 
+        // Reserve 12% for the final TYP total and divide the remaining 88% equally.
+        const columnGroup = document.createElement("colgroup");
+        for (let index = 0; index < 7; index++) {
+          const column = document.createElement("col");
+          column.style.width = index === 6 ? "12%" : (88 / 6) + "%";
+          columnGroup.appendChild(column);
+        }
+        countTable.appendChild(columnGroup);
+
         const headingRow = countTable.insertRow();
         const headingCell = headingRow.insertCell();
         headingCell.colSpan = 7;
