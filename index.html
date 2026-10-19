@@ -7847,6 +7847,53 @@ function hideSpinner() {
       wrapper.appendChild(svgClone);
       svgHoverPanel.appendChild(wrapper);
 
+      // Preview only: fixed period sample sizes until segment-specific counts are implemented.
+      if (field === "DYN") {
+        const periodCounts = [3, 10, 12, 14, 8, 10];
+        const typCount = periodCounts.reduce((sum, count) => sum + count, 0);
+
+        const countContainer = document.createElement("div");
+        countContainer.style.width = wrapper.style.width;
+        countContainer.style.fontFamily = "Roboto, sans-serif";
+        countContainer.style.fontSize = "0.80em";
+        countContainer.style.marginTop = "8px";
+
+        const countTable = document.createElement("table");
+        countTable.style.width = "100%";
+        countTable.style.tableLayout = "fixed";
+        countTable.style.borderCollapse = "collapse";
+        countTable.style.border = "none";
+
+        const headingRow = countTable.insertRow();
+        const headingCell = headingRow.insertCell();
+        headingCell.colSpan = 7;
+        headingCell.textContent = "Based on:";
+        headingCell.style.fontWeight = "bold";
+        headingCell.style.textAlign = "center";
+        headingCell.style.border = "none";
+
+        const valuesRow = countTable.insertRow();
+        [...periodCounts, typCount].forEach((count, index) => {
+          const cell = valuesRow.insertCell();
+          cell.textContent = String(count);
+          cell.style.textAlign = "center";
+          cell.style.padding = "2px 0";
+          cell.style.border = "none";
+          if (index === 6) cell.style.fontWeight = "bold";
+        });
+
+        const footerRow = countTable.insertRow();
+        const footerCell = footerRow.insertCell();
+        footerCell.colSpan = 7;
+        footerCell.textContent = "commentaries";
+        footerCell.style.fontWeight = "bold";
+        footerCell.style.textAlign = "center";
+        footerCell.style.border = "none";
+
+        countContainer.appendChild(countTable);
+        svgHoverPanel.appendChild(countContainer);
+      }
+
       // Add text lines below the SVG
       if (field === "IVM"){
       
