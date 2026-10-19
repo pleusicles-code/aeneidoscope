@@ -7935,6 +7935,16 @@ function hideSpinner() {
         citationTable.style.borderCollapse = "collapse";
         citationTable.style.border = "1px solid black";
 
+        // IVM: 4 columns for books/scenes; 3 columns for passages.
+        const columnWidths = isPassageView ? [35, 35, 30] : [24, 24, 24, 28];
+        const citationColumns = document.createElement("colgroup");
+        columnWidths.forEach(width => {
+          const column = document.createElement("col");
+          column.style.width = width + "%";
+          citationColumns.appendChild(column);
+        });
+        citationTable.appendChild(citationColumns);
+
         const headingRow = citationTable.insertRow();
         const headingCell = headingRow.insertCell();
         headingCell.colSpan = values.length + 1;
@@ -7950,7 +7960,7 @@ function hideSpinner() {
           const cell = valuesRow.insertCell();
           const isTotal = index === allValues.length - 1;
           cell.textContent = (isTotal ? "Σ" : "") + (count === null ? "–" : String(count));
-          cell.style.textAlign = "center";
+          cell.style.textAlign = isTotal ? "right" : "center";
           cell.style.padding = "2px 0";
           cell.style.border = "1px solid black";
           if (isTotal) cell.style.fontWeight = "bold";
