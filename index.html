@@ -386,6 +386,7 @@ let newBasis = "self";
 let currentRowOrderRow;
 let wasFocusedBeforeRowSorting;
 let dataXlsx = null; // globally accessible backup of original XLSX data
+let periodTrendSourceFields = null; // original XLSX column ranges underlying CO1–CO6
 let originalPercentageValues = null;
 let segmentPercentage;
 let current_cell_link;
@@ -1444,6 +1445,87 @@ function setBoxCollapsedState(boxId, collapsed) {
 
 function useCumulativeTables() {
   return !!document.getElementById("toggleStatsCumulative")?.checked;
+}
+
+// Read the contributing commentary fields from the six original CO formulas.
+// Numeric zero is a valid observation; text and empty cells are not.
+function readPeriodTrendSourceFields(sheet) {
+  if (!sheet?.["!ref"]) return null;
+
+  const bounds = XLSX.utils.decode_range(sheet["!ref"]);
+  const headerRow = bounds.s.r;
+  const firstDataRow = headerRow + 1;
+  const headers = new Map();
+
+  for (let col = bounds.s.c; col <= bounds.e.c; col++) {
+    const ref = XLSX.utils.encode_cell({ r: headerRow, c: col });
+    const name = sheet[ref]?.v;
+    if (name !== undefined && name !== null && String(name).trim()) {
+      headers.set(col, String(name));
+    }
+  }
+
+  const columnOf = new Map([...headers].map(([col, name]) => [name, col]));
+  const sources = [];
+
+  for (let period = 1; period <= 6; period++) {
+    const formulaCol = columnOf.get("CO" + period);
+    if (formulaCol === undefined) return null;
+
+    const ref = XLSX.utils.encode_cell({ r: firstDataRow, c: formulaCol });
+    const formula = String(sheet[ref]?.f ?? "");
+    // Example: ROUND(AVERAGE(AVERAGE(M2:P2), MEDIAN(M2:P2)), 0)
+    const match = formula.match(/\bAVERAGE\s*\(\s*\$?([A-Z]{1,3})\$?\d+\s*:\s*\$?([A-Z]{1,3})\$?\d+\s*\)/i);
+    if (!match) return null;
+
+    const from = XLSX.utils.decode_col(match[1].toUpperCase());
+    const to = XLSX.utils.decode_col(match[2].toUpperCase());
+    if (from > to) return null;
+
+    const fields = [];
+    for (let col = from; col <= to; col++) {
+      const name = headers.get(col);
+      if (!name) return null;
+      fields.push(name);
+    }
+    sources.push(fields);
+  }
+
+  return sources;
+}
+
+// Count cells from the original XLSX data, irrespective of the current Basis,
+// sorting, filters or column visibility. For merges, count each commentary
+// once if it has data in at least one source segment.
+function getPeriodContributingCounts(rowData) {
+  if (!periodTrendSourceFields || !Array.isArray(dataXlsx)) return null;
+
+  const bySegment = new Map(dataXlsx.map(row =>
+    [String(row.Segment ?? "").trim(), row]
+  ));
+  const sourceSegments = rowData?.__mergeResult
+    ? mergeSelection?.segments
+    : [rowData?.Segment];
+  if (!Array.isArray(sourceSegments) || !sourceSegments.length) return null;
+
+  const originals = sourceSegments.map(segment =>
+    bySegment.get(String(segment ?? "").trim())
+  );
+  if (originals.some(row => !row)) return null;
+
+  const ordinaryCounts = periodTrendSourceFields.map(fields =>
+    fields.reduce((sum, field) =>
+      sum + (originals.some(row =>
+        typeof row[field] === "number" && Number.isFinite(row[field])
+      ) ? 1 : 0), 0)
+  );
+  const total = ordinaryCounts.reduce((sum, n) => sum + n, 0);
+
+  if (!useCumulativeTables()) return [...ordinaryCounts, total];
+
+  let runningTotal = 0;
+  const cumulativeCounts = ordinaryCounts.map(n => (runningTotal += n));
+  return [...cumulativeCounts, total];
 }
 
 function normalizeCumulativeTrendFields(data) {
@@ -7848,10 +7930,11 @@ function hideSpinner() {
       wrapper.appendChild(svgClone);
       svgHoverPanel.appendChild(wrapper);
 
-      // Preview only: fixed period sample sizes until segment-specific counts are implemented.
+      // Display actual XLSX-based sample sizes for the six periods and TYP.
       if (field === "DYN") {
-        const periodCounts = [3, 10, 12, 14, 8, 10];
-        const typCount = periodCounts.reduce((sum, count) => sum + count, 0);
+        const contributingCounts = getPeriodContributingCounts(cellComponent.getRow().getData());
+        const periodCounts = contributingCounts?.slice(0, 6) ?? Array(6).fill("–");
+        const typCount = contributingCounts?.[6] ?? "–";
 
         const countContainer = document.createElement("div");
         countContainer.style.width = wrapper.style.width;
@@ -11762,11 +11845,17 @@ function hideSpinner() {
             return response.arrayBuffer();
           })
           .then(buffer => {
-            const workbook = XLSX.read(buffer, { type: "array" });
+            const workbook = XLSX.read(buffer, { type: "array", cellFormula: true });
             const sheetName = workbook.SheetNames[sheet_to_use];
             const sheet = workbook.Sheets[sheetName];
             const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-            
+
+            // Identify the actual inputs to CO1–CO6 from the unmodified worksheet.
+            periodTrendSourceFields = readPeriodTrendSourceFields(sheet);
+            if (!periodTrendSourceFields) {
+              console.warn("Unable to read CO1–CO6 source ranges from the XLSX formulas.");
+            }
+
             // IMPORTANT: must happen before Index, copy_CO*, dataXlsx snapshot, and table creation.
             normalizeCumulativeTrendFields(data);
 
