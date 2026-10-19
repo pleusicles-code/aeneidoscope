@@ -7960,7 +7960,7 @@ function hideSpinner() {
           const cell = valuesRow.insertCell();
           const isTotal = index === allValues.length - 1;
           cell.textContent = count === null ? "–" : String(count);
-          cell.style.textAlign = isTotal ? "right" : "center";
+          cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
           cell.style.border = "none";
           if (isTotal) cell.style.fontWeight = "bold";
