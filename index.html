@@ -7890,43 +7890,67 @@ function hideSpinner() {
         svgHoverPanel.appendChild(countContainer);
       }
 
-      // Add text lines below the SVG
-      if (field === "IVM"){
-      
+      // IVM citations follow the same two-row layout as the trends tooltip.
+      if (field === "IVM") {
         const rowData = cellComponent.getRow().getData();
-        
-        const cit1 = rowData.cit_IVM1 ?? "–";
-        const cit2 = rowData.cit_IVM2 ?? "–";
-        const cit3 = rowData.cit_IVM3 ?? "–";
+        const citationFields = ["cit_IVM1", "cit_IVM2", "cit_IVM3"];
+        const counts = citationFields.map(field => {
+          const raw = rowData[field];
+          if (raw === null || raw === undefined || String(raw).trim() === "") return null;
+          const count = Number(raw);
+          return Number.isFinite(count) ? count : null;
+        });
+
+        const total = counts.reduce((sum, count) => sum + (count ?? 0), 0);
+        const anyCount = counts.some(count => count !== null);
+        const isPassageView = selectedBook != 0 && selectedLength === "segment";
+
+        // Passages have one combined IVM1–2 bar; books and scenes have three.
+        const ivm12 = (counts[0] === null && counts[1] === null)
+          ? null
+          : (counts[0] ?? 0) + (counts[1] ?? 0);
+        const values = isPassageView
+          ? [ivm12, counts[2]]
+          : counts;
 
         const textContainer = document.createElement("div");
+        textContainer.style.width = wrapper.style.width;
+        textContainer.style.fontFamily = "Roboto, sans-serif";
+        textContainer.style.fontSize = "0.64em";
         textContainer.style.marginTop = "8px";
-        textContainer.style.fontFamily = "EB Garamond, serif";
-        textContainer.style.fontSize = "0.80em";
-        textContainer.style.lineHeight = "0.9";
 
-        // Add text directly as HTML or plain strings
-        textContainer.innerHTML = `
-          <table style="border-collapse: collapse; width: 100%;">
-            <tr>
-              <td colspan=3 style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; padding-top: 4px; border-top: 1px solid black;"><strong>Number of citations:</strong></td>
-            </tr>
-            <tr>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;"><strong>IVM1</strong></td>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;"><strong>IVM2</strong></td>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;"><strong>IVM3</strong></td>
-            </tr>
-            <tr>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;">${cit1}</td>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;">${cit2}</td>
-              <td style="font-family: Roboto, sans-serif; text-align: center; padding: 2px 0; white-space: nowrap;">${cit3}</td>            
-            </tr>
-          </table>
-        `;      
-        
+        const citationTable = document.createElement("table");
+        citationTable.style.width = "100%";
+        citationTable.style.fontSize = "inherit";
+        citationTable.style.tableLayout = "fixed";
+        citationTable.style.borderCollapse = "collapse";
+        citationTable.style.border = "none";
+
+        const headingRow = citationTable.insertRow();
+        const headingCell = headingRow.insertCell();
+        headingCell.colSpan = values.length + 1;
+        headingCell.textContent = "Individual citations:";
+        headingCell.style.fontWeight = "bold";
+        headingCell.style.textAlign = "left";
+        headingCell.style.border = "none";
+        headingCell.style.borderTop = "1px solid black";
+        headingCell.style.padding = "4px 0 2px";
+
+        const valuesRow = citationTable.insertRow();
+        [...values, anyCount ? total : null].forEach((count, index, allValues) => {
+          const cell = valuesRow.insertCell();
+          const isTotal = index === allValues.length - 1;
+          cell.textContent = (isTotal ? "Σ" : "") + (count === null ? "–" : String(count));
+          cell.style.textAlign = "center";
+          cell.style.padding = "2px 0";
+          cell.style.border = "none";
+          if (isTotal) cell.style.fontWeight = "bold";
+        });
+
+        textContainer.appendChild(citationTable);
         svgHoverPanel.appendChild(textContainer);
       }
-      
+
       const offset = 10;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
