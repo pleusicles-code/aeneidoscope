@@ -7864,7 +7864,7 @@ function hideSpinner() {
         countTable.style.fontSize = "inherit";
         countTable.style.tableLayout = "fixed";
         countTable.style.borderCollapse = "collapse";
-        countTable.style.border = "1px solid black";
+        countTable.style.border = "none";
 
         // Reserve 12% for the final TYP total and divide the remaining 88% equally.
         const columnGroup = document.createElement("colgroup");
@@ -7881,7 +7881,7 @@ function hideSpinner() {
         headingCell.textContent = "Number of contributing commentaries:";
         headingCell.style.fontWeight = "bold";
         headingCell.style.textAlign = "left";
-        headingCell.style.border = "1px solid black";
+        headingCell.style.border = "none";
         headingCell.style.borderTop = "1px solid black";
         headingCell.style.padding = "4px 0 2px";
 
@@ -7891,7 +7891,7 @@ function hideSpinner() {
           cell.textContent = index === 6 ? "Σ" + count : String(count);
           cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
-          cell.style.border = "1px solid black";
+          cell.style.border = "none";
           if (index === 6) cell.style.fontWeight = "bold";
         });
 
@@ -7933,7 +7933,7 @@ function hideSpinner() {
         citationTable.style.fontSize = "inherit";
         citationTable.style.tableLayout = "fixed";
         citationTable.style.borderCollapse = "collapse";
-        citationTable.style.border = "1px solid black";
+        citationTable.style.border = "none";
 
         // IVM: 4 columns for books/scenes; 3 columns for passages.
         const columnWidths = isPassageView ? [35, 35, 30] : [24, 24, 24, 28];
@@ -7951,7 +7951,7 @@ function hideSpinner() {
         headingCell.textContent = "Individual citations:";
         headingCell.style.fontWeight = "bold";
         headingCell.style.textAlign = "left";
-        headingCell.style.border = "1px solid black";
+        headingCell.style.border = "none";
         headingCell.style.borderTop = "1px solid black";
         headingCell.style.padding = "4px 0 2px";
 
@@ -7962,7 +7962,7 @@ function hideSpinner() {
           cell.textContent = (isTotal ? "Σ" : "") + (count === null ? "–" : String(count));
           cell.style.textAlign = isTotal ? "right" : "center";
           cell.style.padding = "2px 0";
-          cell.style.border = "1px solid black";
+          cell.style.border = "none";
           if (isTotal) cell.style.fontWeight = "bold";
         });
 
