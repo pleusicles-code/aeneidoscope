@@ -7864,7 +7864,7 @@ function hideSpinner() {
         countTable.style.fontSize = "inherit";
         countTable.style.tableLayout = "fixed";
         countTable.style.borderCollapse = "collapse";
-        countTable.style.border = "none";
+        countTable.style.border = "1px solid black";
 
         const headingRow = countTable.insertRow();
         const headingCell = headingRow.insertCell();
@@ -7872,7 +7872,7 @@ function hideSpinner() {
         headingCell.textContent = "Number of contributing commentaries:";
         headingCell.style.fontWeight = "bold";
         headingCell.style.textAlign = "left";
-        headingCell.style.border = "none";
+        headingCell.style.border = "1px solid black";
         headingCell.style.borderTop = "1px solid black";
         headingCell.style.padding = "4px 0 2px";
 
@@ -7882,7 +7882,7 @@ function hideSpinner() {
           cell.textContent = index === 6 ? "Σ" + count : String(count);
           cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
-          cell.style.border = "none";
+          cell.style.border = "1px solid black";
           if (index === 6) cell.style.fontWeight = "bold";
         });
 
@@ -7924,7 +7924,7 @@ function hideSpinner() {
         citationTable.style.fontSize = "inherit";
         citationTable.style.tableLayout = "fixed";
         citationTable.style.borderCollapse = "collapse";
-        citationTable.style.border = "none";
+        citationTable.style.border = "1px solid black";
 
         const headingRow = citationTable.insertRow();
         const headingCell = headingRow.insertCell();
@@ -7932,7 +7932,7 @@ function hideSpinner() {
         headingCell.textContent = "Individual citations:";
         headingCell.style.fontWeight = "bold";
         headingCell.style.textAlign = "left";
-        headingCell.style.border = "none";
+        headingCell.style.border = "1px solid black";
         headingCell.style.borderTop = "1px solid black";
         headingCell.style.padding = "4px 0 2px";
 
@@ -7943,7 +7943,7 @@ function hideSpinner() {
           cell.textContent = (isTotal ? "Σ" : "") + (count === null ? "–" : String(count));
           cell.style.textAlign = "center";
           cell.style.padding = "2px 0";
-          cell.style.border = "none";
+          cell.style.border = "1px solid black";
           if (isTotal) cell.style.fontWeight = "bold";
         });
 
