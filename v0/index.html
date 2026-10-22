@@ -3339,26 +3339,32 @@ function applyStatHighlights() {
 
 function updateVersion() {
   const cell = document.getElementById("cell-versions");
-  if (!cell) return;
+  const label = cell?.querySelector("span");
+  if (!label) return;
 
-  // Replace "Changes" with newLabel
-  let cellHtml = cell.innerHTML;
-  
-  if (window.location.pathname.includes("oldversions")) {
-    //document.body.style.backgroundColor = "#ffdddd";
-    cellHtml = cellHtml.replace(/Changes/, "OLD VER.");
-    cellHtml = cellHtml.replace(/v[0-9]+/, version);
-    cell.style.backgroundColor = "red";
-  } else if (window.location.pathname.includes("nextversion")) {
-    //document.body.style.backgroundColor = "#ddffdd";  
-    cellHtml = cellHtml.replace(/v[0-9]+/, "NEXT");
-    cell.style.backgroundColor = "green";
-  } else {
-    cellHtml = cellHtml.replace(/v[0-9]+/, version);  
-  }
+  // The local version comes from this release's version.json.
+  label.textContent = `Changes (${version})`;
 
-  // Update the element
-  cell.innerHTML = cellHtml;
+  // The root manifest identifies the currently published major version.
+  // Older minor releases of the same major version are not considered archived.
+  const localMajor = Number(version.match(/^v(\d+)\./)?.[1]);
+  fetch("../current-version.json", { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) throw new Error("Unable to load current-version.json");
+      return response.json();
+    })
+    .then(data => {
+      if (!Number.isInteger(data.major) || data.major < 0) {
+        throw new Error("Invalid current major version");
+      }
+      if (localMajor < data.major) {
+        label.textContent = `OLD VERSION (${version})`;
+        cell.style.backgroundColor = "red";
+      }
+    })
+    .catch(error => {
+      console.warn("Unable to check AeneidoScope version status:", error);
+    });
 }
 
 updateVersion();
@@ -8204,7 +8210,7 @@ function hideSpinner() {
       openFloatingWindow("bibliography.html");
     });
     document.getElementById("cell-versions").addEventListener("click", function() {
-      openFloatingWindow("versions.html");
+      openFloatingWindow("../changelog.html");
     });
     document.getElementById("close-window").addEventListener("click", function() {
       closeFloatingWindow();
