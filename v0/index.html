@@ -11822,10 +11822,9 @@ function hideSpinner() {
       showSpinner(); // Show spinner immediately
 
       setTimeout(() => {
-        const cumulativeSuffix = "";
 
         if (newBook == 0) {
-          new_filename = "table-0" + cumulativeSuffix + ".xlsx";
+          new_filename = "table-books.xlsx";
           disableScopeRadiosState(true);
           disableAnselmRadiosState(false);
           disableBrantRadiosState(false);
@@ -11841,7 +11840,7 @@ function hideSpinner() {
             disableBrantRadiosState(false);
           }
 
-          new_filename = "table-" + newFilenameLength + "-" + newScope + cumulativeSuffix + ".xlsx";
+          new_filename = "table-" + newFilenameLength + "-" + newScope + ".xlsx";
           disableScopeRadiosState(false);
           console.log(newBook);
           console.log(newLength);
