@@ -9800,15 +9800,15 @@ function hideSpinner() {
           let textAnchor;
           if ( selectedBook == 0 ) {
             const bookToShow = data.Link;
-            textFile = "https://aeneidoscope.elte.hu/Aeneis/aeneis" + bookToShow + ".html";
+            textFile = "texts/aeneis" + bookToShow + ".html";
           } else if (selectedBook == 13) {
             const seg = String(data.Segment ?? "").trim();
             const firstTwo = seg.slice(0, 2);                 // e.g. "01", "10"
             const bookFromSegment = firstTwo.replace(/^0(?=\d)/, ""); // "01"→"1", "10"→"10"
-            textFile = "https://aeneidoscope.elte.hu/Aeneis/aeneis" + bookFromSegment + ".html";
+            textFile = "texts/aeneis" + bookFromSegment + ".html";
             textAnchor = "section" + data.Section;
           } else {
-            textFile = "https://aeneidoscope.elte.hu/Aeneis/aeneis" + selectedBook + ".html";
+            textFile = "texts/aeneis" + selectedBook + ".html";
             textAnchor = "section" + data.Section;
           }
           showTimeout = setTimeout(() => {
