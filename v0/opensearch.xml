@@ -4,5 +4,5 @@
   <Description>Search AeneidoScope by location (e.g., 3 [Book] or 12.125 [Line])</Description>
   <InputEncoding>UTF-8</InputEncoding>
   <Url type="text/html"
-       template="https://latin.elte.hu/copia/tabulator/nextversion/?loc={searchTerms}"/>
+       template="https://aeneidoscope.elte.hu/?loc={searchTerms}"/>
 </OpenSearchDescription>

@@ -6095,7 +6095,7 @@ function hideSpinner() {
     
     
     // Load your CSV data on page load
-    fetch("bibliography.csv")
+    fetch("data/bibliography.csv")
       .then(response => response.text())
       .then(csvText => {
         const parsed = Papa.parse(csvText, {
@@ -6109,7 +6109,7 @@ function hideSpinner() {
       .catch(err => console.error("Error loading biblio CSV:", err));
 
     // Load your CSV data on page load
-    fetch("commlinks.csv")
+    fetch("data/commlinks.csv")
       .then(response => response.text())
       .then(csvText => {
         const commparsed = Papa.parse(csvText, {
@@ -7355,7 +7355,7 @@ function hideSpinner() {
       
       
       else if (["AnsPr"].includes(field)) {
-        constructedLink = "mirador-wrapper-anselm_pr.html?page=" + linkValue
+        constructedLink = "wrappers/mirador-wrapper-anselm_pr.html?page=" + linkValue
       }      
 
       else if (["AnsBNL"].includes(field)) {
@@ -7367,7 +7367,7 @@ function hideSpinner() {
           linkValue = linkValue.slice(4);
           constructedLink = "https://viewer.onb.ac.at/1320AE61/" + linkValue
         } else {
-          constructedLink = "mirador-wrapper-zono.html?page=" + linkValue
+          constructedLink = "wrappers/mirador-wrapper-zono.html?page=" + linkValue
         }
       }
       
@@ -7588,7 +7588,7 @@ function hideSpinner() {
       
       else if (["Bers"].includes(field)) {
         linkValue = parseFloat(linkValue) + 52;
-        constructedLink = "mirador-wrapper-bersmann.html?page=0" + linkValue;
+        constructedLink = "wrappers/mirador-wrapper-bersmann.html?page=0" + linkValue;
       }            
 
       else if (["Fab", "Ven"].includes(field)) {       
@@ -7608,7 +7608,7 @@ function hideSpinner() {
       else if (["Sgl"].includes(field)) {
         linkValue = parseFloat(linkValue) + 20;
         linkValue = String(Math.round(linkValue)).padStart(4, "0");
-        //constructedLink = "mirador-wrapper-strigel.html?page=" + linkValue;
+        //constructedLink = "wrappers/mirador-wrapper-strigel.html?page=" + linkValue;
         constructedLink = "https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN780077105&PHYSID=PHYS_" + linkValue;
       }            
       
@@ -7620,10 +7620,10 @@ function hideSpinner() {
       
       else if (["Cer"].includes(field)) {
         if (linkValue.includes("1#")) {
-          baseUrl = "mirador-wrapper-cerda_vol1.html?page="
+          baseUrl = "wrappers/mirador-wrapper-cerda_vol1.html?page="
           linkValue = String(Math.floor(parseFloat(linkValue.slice(2))) + 2).padStart(4, "0");
         } else {
-          baseUrl = "mirador-wrapper-cerda_vol2.html?page="
+          baseUrl = "wrappers/mirador-wrapper-cerda_vol2.html?page="
           linkValue = String(Math.floor(parseFloat(linkValue.slice(2))) + 12).padStart(4, "0");
         }       
         constructedLink = baseUrl + linkValue
@@ -11853,7 +11853,7 @@ function hideSpinner() {
           }
         }
       
-        const url_pre = "";
+        const url_pre = "data/";
         let url = url_pre + new_filename;
         let sheet_to_use = newBook == 0 ? 0 : Number(newBook) - 1;
 
