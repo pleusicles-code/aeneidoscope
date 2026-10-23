@@ -1,0 +1,3 @@
+# clasp authentication and project mapping stay out of version control.
+.clasprc.json
+.clasp.json
