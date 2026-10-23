@@ -2325,7 +2325,7 @@ async function insertMergedRow(segments) {
     positionMergedRow();
     applyStatHighlights();
     const note = computed.partialCount
-      ? '<div style="font-size:0.85em;margin-top:3px;">Note: Some commentaries cover only part of this range. Their values, and their Period/TYP reference values, use only available segments.</div>'
+      ? '<div style="font-size:0.85em;margin-top:3px;">Note: Some commentaries cover only part of this range. Merged individual values are based on the available segments.</div>'
       : "";
     setMessage("<strong>" + segments.length + "</strong> Segments merged into <strong>" +
       computed.label + "</strong> (" + Number(computed.totalLength.toFixed(1)) + " lines)." + note);
