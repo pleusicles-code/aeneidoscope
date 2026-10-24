@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instructions for Vergil's <em>Aeneid</em> Commentaries</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.2em;
+            line-height: 1.6;
+            max-width: 93%;
+            text-align: justify;
+            margin: 2rem;
+            color: #333;
+            background: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        em {
+            font-style: italic;
+        }
+        strong {
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            width: 60%;
+            margin: 1rem auto;
+            font-size: 0.9rem;
+        }
+        td {
+            border: 1px solid #ccc;
+            padding: 0.4rem 0.6rem;
+            line-height: 1.2;
+        }
+        a:link, a:visited {
+            color: #5699C6;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>How to Use</h1>
+    <p>The purpose of <em>AeneidoScope</em> is to visualise the proportional distribution of material in various commentaries on Virgil's <em>Aeneid</em>. It enables comparing segments of three lengths: <strong>books</strong>, <strong>scenes</strong> (of typically about 70 lines) and <strong>passages</strong> (of 10 lines in average). For some typical usage scenarios, see <a href="#scenarios">below</a>.</p>
+    
+    <p>For questions, suggestions (including further commentaries to be included), or corrections regarding <em>AeneidoScope</em>, please contact its author, Dániel Kozák, at <a href="mailto:kozak.daniel@btk.elte.hu?subject=AeneiScope%20inquiry">kozak.daniel@btk.elte.hu</a>.</p>
+    
+    <p>The initial development of <em>AeneidoScope</em> was funded by FKFI grant FK135096.</p>    
+
+    <h2>Navigation</h2>
+    <p>The main navigation menu at the top of the page represents the three levels: clicking on the first row activates the comparison of books (the default); the second row activates the comparison of scenes (of a specific book, or all books at once); the third row activates the comparison of passages (in a similar way to the comparison of scenes). You can also switch between these levels by scrolling up/down over the menu. Showing scenes/passages of all books at once makes operations slower and will display all commentary columns, some of which will be empty for several books; it is thus advisable to use this view only when comparison across books is necessary. The <strong>Condensed</strong> checkbox can be used to make row and column sizes somewhat smaller (useful for lower resolution screens and/or the 'all books' view). Clicking on the <em>AeneidoScope</em> logo restores the default settings.</p>
+
+    <p>You can also use the <strong>Segment</strong> column to zoom in gradually: click on a given segment to zoom in to scenes of a given book, or passages of a given scene. In 'passages' view, clicking on this column switches between showing all passages of a book and only passages belonging to a specific scene. The first passage of each scene is indicated in bold in the <strong>Plot summary</strong> column.</p>
+
+    <p>Left-clicking on <strong>Plot summary</strong> hides all other rows in the current view (a second left-click restores the list of segments); hovering over it displays the relevant part of the Virgilian text in a tooltip window (with the beginning of passages in bold and the beginning of scenes in small caps).</p></p>
+
+    <p>The input fields at the top of the <strong>Segment</strong> and <strong>Plot</strong> columns can be used for custom filtering. For the syntax and examples, hover over the respective headers.</p>
+
+    <h2>The Commentaries</h2>
+    <p>Commentaries ranging from Servius to the 21st century are included. Information about each commentary, along with links to digital texts/facsimiles where available, is shown in a tooltip when you hover over the column header. The full bibliographic list can be accessed using the <strong>Commentaries</strong> button. Commentaries are grouped into six colour-coded periods, as indicated at the top of the column headers. All periods are shown by default; they can be switched on or off using the corresponding checkbox in the <strong>Periods</strong> row at the top. For displays with lower resolution, it is recommended that you choose a browser window zoom level below 100%.</p>
+
+    <p>Some <strong>extra columns</strong> (e.g. the "Compiler"'s additions, the first two editions of Heyne, or Brant's illustrations) are hidden by default and can be displayed using the corresponding checkboxes.</p>
+    
+    <p>There is also a checkbox that allows you to apply a <strong>custom filter</strong> to show or hide columns. Activating this option freezes the current state of the other checkboxes. You can use a list of strings to display the corresponding commentaries only (e.g. "Ser Donat" displays Servius, Servius <em>Auctus</em> and Donatus), negative strings to hide commentaries from the current view ("-Donat" hides Donatus), ranges ("Serv-Melan" shows all columns from Servius to Melanchthon) and combinations ("Ser -Auct" shows Servius but not the <em>Auctus</em>). Explicitly marking terms as positive (e. g. +Heyne) also shows columns which are otherwise hidden currently.</p>
+    
+    <p>You can <strong>sort</strong> the table by most columns by clicking on the respective column header; a second click swaps the direction of sorting. You can return to the linear order of segments by clicking on the <strong>Segment</strong> header. If <strong>Ranks</strong> is checked, the rankings will appear to the left of the column used for sorting. You can also sort a single row (hiding all others temporarily) by right-clicking on any of the data cells of that row. Commentaries with high values will appear on the left, and the typical value for a given period or all periods (as set in the header of the TRENDS column) will also be displayed with black dashed borders. A second right-click restores the chronological order of columns; left-clicking on Plot both restores the chronological order and shows all rows again.</p>
+
+    <h2>Interpreting the Data</h2>
+    <p>The table uses heatmap-style colouring to show how "dense" the individual commentaries are for different segments of the Virgilian text:</p>
+
+    <table>
+        <tbody>
+            <tr style="background-color: #ed8860;">
+                <td>Above average (&gt;105%)</td>
+                <td align=center>Shades of red</td>
+            </tr>
+            <tr style="background-color: #c4c4c4;">
+                <td>Around average (95-105%)</td>
+                <td align=center>Grey</td>
+            </tr>
+            <tr style="background-color: #d1e5f0;">
+                <td>Below average (&lt;95%)</td>
+                <td align=center>Shades of blue</td>
+            </tr>
+            <tr style="background-color: #000; color: #fff;">
+                <td>No explanation at all (0%)</td>
+                <td align=center>Black</td>
+            </tr>
+            <tr style="background-color: #fff;">
+                <td>Commentary lost / not existing</td>
+                <td align=center>White / empty</td>
+            </tr>
+            <tr style="background-color: #fff;">
+                <td>Comments exist but length is not measured (e.g. for the <em>scholia Veronensia</em>)</td>
+                <td align=center><b>+</b></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <p>Setting the <strong>Sensitivity</strong> slider to a lower value makes the range of the 'average' colour category broader, making higher and lower values more easily discernible. The current range for the average category is displayed in a tooltip above the slider.</p>
+
+    <p>By default, 100 (grey) represents the average length of comments per Virgilian line of the given commentary as a whole (e.g. Servius on the <em>Aeneid</em>). The radio buttons in the <strong>Basis</strong> row can be used to set the basis for the calculations according to two parameters: 
+    <ol>
+        <li>the average can be taken for <strong>all books</strong> of the <em>Aeneid</em> (the default option) or - while showing scenes or passages of a given book - for the <strong>same book</strong> only (useful when a commentator offers exceedingly lengthy or scarce comments for that book); and</li>
+        <li>these average values can be obtained from the <strong>same commentary</strong>, commentaries from the <strong>same period</strong>, or commentaries from <strong>all periods</strong>. (See below for more information on the 'typical values' used in the latter two cases.) This parameter helps to identify commentary segments of atypical length.</li>
+    </ol>
+
+    <p>The exact numerical values (as a percentage) are displayed when you hover over a given cell. This also activates a tooltip showing additional information, including the approximate length of the given commentary section in characters. If a small link icon is displayed in the top right corner of a cell, you can click on the cell to open the relevant passage of the given commentary in a new window. These links, however, can only be approximately precise in some cases.</p>
+    
+    <p>You can also choose to display numeric values for all cells by using the <strong>Display / Numbers</strong> checkbox.</p>
+    
+    <h2>Exporting, sharing and querying</h2>
+    
+    <p><em>AeneidoScope</em> allows three ways to download or share specific table views, using the <strong>Export</strong> toolbar section. By clicking on the <strong>Share</strong> button you can construct a link (automatically copied to the clipboard) which stores all current settings and restores them upon loading; the <strong>CSV</strong> button allows you to download current table data and open it with spreadsheet applications or visualization services; the <strong>camera</strong> icon downloads the current table view as a .png image file.</p>
+    
+    <p>It is also possible to query <em>AeneidoScope</em> for a specific locus directly by adding "?loc=1" (book) or "?loc=1.123" (line) to the url; e.g. <a href="https://aeneidoscope.elte.hu/?loc=1.123" target="_blank" rel="noopener noreferrer">aeneidoscope.elte.hu/?loc=1.123</a>. If you specify a line, the passage which it belongs to will be shown.  You can also add a custom search engine to browsers (set search url: https://latin.elte.hu/copia/tabulator/nextversion/?loc=%s) and set a shortcut ("aen" etc.), and then query <em>AeneidoScope</em> by simply typing "aen 1.123".
+
+    <h2>Minigraphs</h2>
+    <p>There are two additional columns that can be used to display minigraphs as either <strong>bars</strong> or <strong>lines</strong>. Use the <strong>Graphs</strong> radio buttons to switch between the two options. Hovering over a minigraph will show a scaled-up version, which can be downloaded as an image by clicking on the camera button shown in the tooltip. The column header contains a selector that allows you to choose which minigraph value to use for sorting the table.</p>
+
+    <p><strong>Trends</strong> (turned on/off using the checkbox under <strong>Stats</strong>) is intended to illustrate historical trends across the six periods. The six data points indicate the "typical values" based on commentaries of a given period. This value is calculated as the average of the average and the mean of the commentaries for the given segment in order to prevent excessive values from having an overly great influence on the result. The same calculation is used to determine the typical value for all commentaries, which is indicated by a dashed horizontal line with the corresponding numeric value displayed to the right. The <strong>Cumulative</strong> checkbox recalculates period values cumulatively, so that each period includes earlier ones as well: e.g. Period 4 = Periods 1–4. Period 6 thus equals the ‘All periods’ value, while Period 1 remains unchanged. In cumulative mode, segment values are also recalculated when the ‘Basis’ is set to "typical values in the same period", since the underlying period averages become cumulative. <b>Note:</b> some commentaries are not taken into account when calculating typical values (in general or at the level of passages), either because they are special works (e.g. Pierio Valeriano's discussion of <em> variae lectiones</em>), because they have too many segments with zeroes (e.g. Melanchthon) which would distort calculations, or because a later version of the same commentary (e.g. Heyne's) is used for the calculations. Such commentaries are always marked with subtle striping both for the coloured table cells and the headers.</p>
+
+    <p><strong><em>IVM</em></strong> (grouped with Period 1 and hidden by default) represents the proportional values of ancient quotations of the <em>Aeneid</em>, as recorded in the indices of <em>Interpretationes Vergilianae Minores</em>. This column can be used to compare the prominence of a given Virgilian segment in ancient commentaries and other texts (including glosses). The graph's three data points correspond to the three periods covered by the three <em>IVM</em> volumes. At the level of passages, periods 1-2 of <em>IVM</em> had to be merged to prevent distortion caused by the very low number of quotations in period 1.</p>
+    
+    <h2>Statistics</h2>
+    
+    <p>It is also possible to calculate statistical data on selected ranges. To activate statistical mode, expand the <strong>Stats</strong> option box (collapsed by default), then click on <strong>Measure</strong>. Then you can right-click to select which range you need statistical data about: clicking on a column header selects all visible rows; you can also select a custom horizontal or vertical range of cells by clicking on  the first and last cell to include. The results are displayed under the table: in vertical mode, these include the percentage the selected cells would represent as a single segment; in horizontal mode, the typical value is for the custom range is calculated in the same way (including the exclusion of the same commentaries) as the typical values for the six periods.</p> 
+    
+    <p><strong>Correlation</strong> calculates the Spearman and Pearson coefficients (r<sub>s</sub> and r), representing the the direction and strength of ranking and proportional correlation between two columns. After clicking on this button, two columns must be selected by right-clicking on their headers; the result (with a short intrepretation of the values) will be displayed below the table. For theses calculations, only the rows which are currently visible (and have values for both columns) are taken into account; rows filtered out are ignored. Clicking on the scatterplot icon next to the results displays a small window with a graphical representation.</p>
+    
+    <a name="scenarios"><h2>Some example usage scenarios</h2></a>
+    <ul>
+    <li><strong>compare the treatment of <em>Aeneid</em> 5 in various commentaries:</strong> click on the plot description for this book to focus on it and hide all others. Optionally, you can right-click on any of the data cells to sort commentaries by their density for this book.</li>
+    <li><strong>compare the scenes involving Mercurius in <em>Aeneid</em> 4: </strong> click on <em>Aen.</em> 4 in the second row of the navigation menu and then enter this name in the filter field in the Plot column header.</li>
+    <li><strong>see the most densely commented passages by Landino for the whole epic:</strong> select 'All books' from the third row of the navigation menu, and then click on the commentator's name in the column  header. Optionally, the rankings can be displayed by ticking the appropriate checkbox.</li>
+    <li><strong>check which commentators comment on any of the books with significantly higher or lower density than their contemporaries:</strong> select 'same period' among the 'Basis' checkboxes, and lower the sensitivity slider.</li>
+    <li><strong>compare only Servius and La Cerda, hiding all others:</strong> tick 'Custom filter', and in the checkbox which appears to the right, enter "Servius Cerda" (or just "Serv Cerd"). To hide the <em>Auctus</em>, add "-Auct".</li>
+    <li><strong>read Pontanus' comments on the beginning of <em>Aeneid</em> 4:</strong> click on this book in the navigation menu, then hover over the first row in the appropriate column. Click on the link at the bottom of the tooltip which appears.</li>        
+    </ul>
+</body>
+</html>

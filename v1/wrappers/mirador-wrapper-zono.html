@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Zono de Magnalis (MS. Laur. Plut. 53.25)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/mirador@latest/dist/mirador.min.css">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #viewer { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="viewer"></div>
+
+  <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
+  <script>
+    // --- CONFIG YOU CAN EDIT ---
+    const DEFAULT_MANIFEST = "https://tecabml.contentdm.oclc.org/iiif/2/plutei:1425483/manifest.json";
+    // ---------------------------
+
+    // Read query params
+    const QS = new URLSearchParams(location.search);
+    const manifest = QS.get("manifest") || DEFAULT_MANIFEST;
+
+    // Ways to specify start page:
+    //   1) canvas=<full canvas ID>  (takes precedence)
+    //   2) cv=<zero-based index>    (Mirador-style index)
+    //   3) page=<1-based number>    (human-friendly; we convert to cv)
+    const canvasId = QS.get("canvas");
+    const hasCv    = QS.has("cv");
+    const hasPage  = QS.has("page");
+    const cvIndex  = hasCv  ? Math.max(0, parseInt(QS.get("cv"), 10) || 0)
+                            : (hasPage ? Math.max(0, (parseInt(QS.get("page"), 10) || 1) - 1) : null);
+
+    // Build Mirador window config
+    const windowCfg = {
+      loadedManifest: manifest,
+      thumbnailNavigationPosition: 'far-bottom', // nice for codices
+    };
+    if (canvasId) {
+      windowCfg.canvasId = canvasId;        // exact canvas URL
+    } else if (cvIndex !== null) {
+      windowCfg.canvasIndex = cvIndex;      // 0-based index
+    }
+
+    // Optional: also add the manifest to the left "catalog" panel
+    const catalogEntry = { manifestId: manifest, provider: "Manifest" };
+
+    // Launch Mirador
+    Mirador.viewer({
+      id: "viewer",
+      windows: [ windowCfg ],
+      catalog: [ catalogEntry ],
+      window: {
+        allowClose: false,
+        allowMaximize: true,
+        defaultView: 'single',    // 'single' or 'book'
+        sideBarOpenByDefault: false,
+      },
+      workspaceControlPanel: { enabled: true },
+    });
+  </script>
+</body>
+</html>
