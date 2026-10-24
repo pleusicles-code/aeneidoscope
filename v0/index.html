@@ -7276,6 +7276,17 @@ function hideSpinner() {
       }
       
       // COMMLINKS
+      // *** marks a book-level link, ** a scene-level link.
+      // Scholia Veronensia (sV) is exempt: its current repository links only to book beginnings.
+      if (field !== "sV" && typeof linkValue === "string") {
+        if (linkValue.startsWith("***")) {
+          if (selectedBook !== 0) return "";
+          linkValue = linkValue.slice(3);
+        } else if (linkValue.startsWith("**")) {
+          if (selectedLength !== "scene") return "";
+          linkValue = linkValue.slice(2);
+        }
+      }
       
       let constructedLink = "";
       
@@ -7294,19 +7305,7 @@ function hideSpinner() {
       }                  
 
       else if (["sV"].includes(field)) {
-        //linkValue = Math.floor(parseFloat(linkValue) + 26);
-        // if (linkValue.startsWith("***") && selectedBook != 0) {
-        //   constructedLink = "";
-        // } else if (linkValue.startsWith("***") && selectedBook == 0) {
-        //   constructedLink = linkValue.slice(3);
-        // } else if (linkValue.startsWith("**") && selectedLength !== "scene") {
-        //   constructedLink = "";
-        // } else if (linkValue.startsWith("**") && selectedLength === "scene") {
-        //   constructedLink = linkValue.slice(2);
-        // } else {
-        //   constructedLink = linkValue;
-        // }
-        
+        // Only book-beginning anchors are available; ignore the older passage URLs in the CSV.
         console.log(segment);
         constructedLink = "https://www.digiliblt.uniupo.it/teidocs/idno/DLT000466/build/html#";
         
@@ -7334,20 +7333,10 @@ function hideSpinner() {
       }      
 
       else if (["Bero"].includes(field)) {
-        if (linkValue.startsWith("***") && selectedBook != 0) {
-          linkValue = "";
-        } else if (linkValue.startsWith("***") && selectedBook == 0) {
-          linkValue = linkValue.slice(3);
-        } else if (linkValue.startsWith("**") && selectedLength !== "scene") {
-          linkValue = "";
-        } else if (linkValue.startsWith("**") && selectedLength === "scene") {
-          linkValue = linkValue.slice(2);
-        } 
         if (linkValue !== "") {
           constructedLink = "https://gallica.bnf.fr/view3if/ga/ark:/12148/bpt6k10903547/f" + linkValue;
-          
         }
-      }      
+      }
 
       else if (["BS"].includes(field)) {
         constructedLink = "https://archive.org/details/commentumquoddic0000unse/page/" + linkValue + "/mode/1up"
