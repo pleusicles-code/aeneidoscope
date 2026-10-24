@@ -186,6 +186,7 @@
           <label><input id="toggleHeyne" class="worksCheckBox" type="checkbox"> Heyne+</label>
           <label><input id="toggleHen" class="worksCheckBox" type="checkbox"> Henry</label>          
           <label><input id="toggleNorden" class="worksCheckBox" type="checkbox" disabled> Norden+</label>
+          <label><input id="toggleMisc" class="worksCheckBox" type="checkbox"> Miscellanea</label>
           <span id="customFilterBox"><label><input id="toggleColumnFilter" type="checkbox"> Filter</label>
           <input id="columnFilterInput" type="text" placeholder="Filter by commentary..."
                  style="padding:0px 0px 0px 0px; font-size:0.9em; display:none; position: relative; top: -3px; left: 3px;"></span>
@@ -12228,6 +12229,7 @@ function hideSpinner() {
       applyColumnVisibility("toggleHeyne", "^H1");
       applyColumnVisibility("toggleHen", "^Hen");
       applyColumnVisibility("toggleNorden", "^N1");
+      applyColumnVisibility("toggleMisc", "^Misc");
       applyColumnVisibility("toggleDYN", "DYN");    
       
       refreshGeneratedStatColumns();
@@ -12330,6 +12332,11 @@ function hideSpinner() {
       refreshGeneratedStatColumns();
     });
     
+    document.getElementById("toggleMisc").addEventListener("change", () => {
+      applyColumnVisibility("toggleMisc", "^Misc");
+      refreshGeneratedStatColumns();
+    });
+
     document.getElementById("toggleDYN").addEventListener("change", () => {
       applyColumnVisibility("toggleDYN", "DYN");
       refreshGeneratedStatColumns();
@@ -12427,6 +12434,7 @@ function hideSpinner() {
             (!document.getElementById("toggleHeyne").checked && ["^H1", "^H2", "^Hex"].some(prefix => field.startsWith(prefix))) ||
             (!document.getElementById("toggleHen").checked && field.startsWith("^Hen")) ||
             (!document.getElementById("toggleNorden").checked && ["^N1", "^N2"].some(prefix => field.startsWith(prefix))) ||
+            (!document.getElementById("toggleMisc").checked && field.startsWith("^Misc")) ||
             // 👇 additionally hide periods if the checkbox is unchecked
             (!document.getElementById("togglePeriod1").checked && period1Fields.some(prefix => field.startsWith(prefix))) ||
             (!document.getElementById("togglePeriod2").checked && period2Fields.some(prefix => field.startsWith(prefix))) ||
