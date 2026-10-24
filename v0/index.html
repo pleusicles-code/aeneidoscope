@@ -7276,10 +7276,13 @@ function hideSpinner() {
       }
       
       // COMMLINKS
-      // *** marks a book-level link, ** a scene-level link.
+      // **** marks book and scene links, *** book-only links, ** scene-only links.
       // Scholia Veronensia (sV) is exempt: its current repository links only to book beginnings.
       if (field !== "sV" && typeof linkValue === "string") {
-        if (linkValue.startsWith("***")) {
+        if (linkValue.startsWith("****")) {
+          if (selectedBook !== 0 && selectedLength !== "scene") return "";
+          linkValue = linkValue.slice(4);
+        } else if (linkValue.startsWith("***")) {
           if (selectedBook !== 0) return "";
           linkValue = linkValue.slice(3);
         } else if (linkValue.startsWith("**")) {
