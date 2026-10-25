@@ -1082,6 +1082,67 @@
         headerVertical: "flip",
         cssClass: "header-period6",        
       },
+      // Miscellanea: sparse, presence-only commentaries
+      "^MiscDC^": {
+        title: "Dalla Croce",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscBon^": {
+        title: "M. Bonfini",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscCos^": {
+        title: "Costanzi",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscRho^": {
+        title: "Rhodiginus",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscDel^": {
+        title: "Delfini",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscScoe^": {
+        title: "Scoelsius",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },
+      "^MiscScop^": {
+        title: "Scoppa",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period3 header-thin-padding thin-padding",
+      },
+      "^MiscMod^": {
+        title: "Modicius",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period3 header-thin-padding thin-padding",
+      },
+      "^MiscPao^": {
+        title: "Paolini",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period3 header-thin-padding thin-padding",
+      },
+      "^MiscWill^": {
+        title: "Willemer",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period4 header-thin-padding thin-padding",
+      },
       "copy_TYP": {
         title: "TRENDS (All)",
         hozAlign: "center",

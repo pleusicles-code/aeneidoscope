@@ -136,9 +136,9 @@ function getBookLacunaLength(field, segment) {
 // PERIODFIELDS
 
 const period1Fields = ["IVM", "Ser", "^Co^", "DS", "TCD", "^sV^", "^Fulg^"];
-const period2Fields = ["^BS^", "BS", "^AnsBNL^", "^AnsPr^", "GdV", "Zon", "^Bero^", "Pom", "Leo", "^Leo^", "Lan", "^TCDLand1^", "^TCDLand2^", "Bad", "Cam", "^Cam^", "^Bra^", "^Bra2^", "Sul", "^Sul^", "Sct", "Prs"];
-const period3Fields = ["Mel", "^Mel^", "^Era^", "^Era2^", "Ery", "Nan", "Be", "Bch", "Rob", "^Hrt^", "Cor", "Man", "^Man^", "^Sca^", "Ho1", "Ho2", "^Ho1^", "^Ho2^", "Reg", "Est", "Mey", "Nas", "^Nas^", "Bers", "Fab", "Ven", "Sgl", "^Sgl^"];
-const period4Fields = ["Pon", "Cer", "Tau", "Ben", "^Ben^", "Abr", "Far", "Min", "Sch", "Mat", "Rue", "Jck", "Kgl", "Coo", "^Coo^", "HB"];
+const period2Fields = ["^BS^", "BS", "^AnsBNL^", "^AnsPr^", "GdV", "Zon", "^Bero^", "Pom", "Leo", "^Leo^", "Lan", "^TCDLand1^", "^TCDLand2^", "Bad", "Cam", "^Cam^", "^Bra^", "^Bra2^", "Sul", "^Sul^", "Sct", "Prs", "^MiscDC^", "^MiscBon^", "^MiscCos^", "^MiscRho^", "^MiscDel^", "^MiscScoe^"];
+const period3Fields = ["Mel", "^Mel^", "^Era^", "^Era2^", "Ery", "Nan", "Be", "Bch", "Rob", "^Hrt^", "Cor", "Man", "^Man^", "^Sca^", "Ho1", "Ho2", "^Ho1^", "^Ho2^", "Reg", "Est", "Mey", "Nas", "^Nas^", "Bers", "Fab", "Ven", "Sgl", "^Sgl^", "^MiscScop^", "^MiscMod^", "^MiscPao^"];
+const period4Fields = ["Pon", "Cer", "Tau", "Ben", "^Ben^", "Abr", "Far", "Min", "Sch", "Mat", "Rue", "Jck", "Kgl", "Coo", "^Coo^", "HB", "^MiscWill^"];
 const period5Fields = ["^Hex^", "^H1^", "^H2^", "H3", "HW", "For", "Pkp", "Con", "^Con^", "CN", "^Hen^", "Wnr", "Lwg", "Sab", "Kap"];
 const period6Fields = ["Pge", "Pag", "WF", "^N1^", "^N2^", "N3", "Mac", "McK", "Mck", "Bus", "Cwy", "Pea", "Fle", "Spe", "Wil", "W12", "Aus", "Edn", "Gra", "Frd", "Per", "^Per^", "Par", "Din", "Hrs", "Hrd", "Hrf", "Gan", "Fra", "OHr", "Jtn", "Tar", "Frl", "FS", "McG", "HM", "Bin", "Cas", "Pkl", "Ros", "Gar"];
 const trendFields = ["copy_TYP", "copy_CO1", "copy_CO2", "copy_CO3", "copy_CO4", "copy_CO5", "copy_CO6"];
@@ -3913,7 +3913,8 @@ const PRESENCE_ONLY_FIELDS = new Set([
 ]);
 
 function isPresenceOnlyField(field) {
-  return PRESENCE_ONLY_FIELDS.has(String(field || ""));
+  const name = String(field || "");
+  return name.startsWith("^Misc") || PRESENCE_ONLY_FIELDS.has(name);
 }
 
 // True only for ordinary + presence-only comparisons.
@@ -10534,7 +10535,7 @@ function hideSpinner() {
     function trendsRecalc(mode, sourceData = null) {
       const targetFieldsSet = new Set(
         [...period1Fields, ...period2Fields, ...period3Fields, ...period4Fields, ...period5Fields, ...period6Fields]
-          .filter(field => !excludedFieldsTrendsRecalc.includes(field))
+          .filter(field => !excludedFieldsTrendsRecalc.includes(field) && !isPresenceOnlyField(field))
       );
 
       const periodLookup = new Map();
