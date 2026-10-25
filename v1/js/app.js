@@ -5966,8 +5966,8 @@ function hideSpinner() {
         return;
       }
       
-      if (field === "^sV^" || field === "^Bero^") {
-        return
+      if (field === "^sV^" || field === "^Bero^" || field.startsWith("^Misc")) {
+        return false;
       }
       
       const cellContent = cell.textContent.trim();
