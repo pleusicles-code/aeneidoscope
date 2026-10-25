@@ -155,7 +155,7 @@
         } else if (["MiscScoe"].includes(field)) {
           constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10192348?page=" + linkValue
         } else if (["MiscMod"].includes(field)) {
-          constructedLink = "https://digitale-sammlungen.de/en/view/bsb10171386?page=" + (Number(linkValue) * 2 + 22);
+          constructedLink = "https://digitale-sammlungen.de/en/view/bsb10171386?page=" + (Number(linkValue) * 2 + 21);
         }            
       }            
           
