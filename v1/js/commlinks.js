@@ -105,7 +105,6 @@
         constructedLink = "https://archive.org/details/commentumquoddic0000unse/page/" + linkValue + "/mode/1up"
       }      
       
-      
       else if (["AnsPr"].includes(field)) {
         constructedLink = "wrappers/mirador-wrapper-anselm_pr.html?page=" + linkValue
       }      
@@ -147,7 +146,15 @@
           .replace(/\~/g, '#');     // 
         constructedLink = linkValue
       }                  
-      
+
+      else if (field.startsWith("Misc")) {
+        if (["MiscDC", "MiscBon", "MiscDel", "MiscPao", "MiscWill"].includes(field)) {
+          constructedLink = linkValue;
+        } else if (["MiscScop", "MiscRho", "MiscCos"].includes(field)) {            
+          constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10140383?page=" + linkValue
+        }
+      }            
+          
       else if (["Bad"].includes(field)) {
         linkValue = parseFloat(linkValue);
         constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10195834?page=" + linkValue
@@ -156,8 +163,7 @@
       else if (["Cam", "^Cam^"].includes(field)) {
         linkValue = Math.floor(parseFloat(linkValue));
         constructedLink = "https://www.google.com/books/edition/Opera/Xmg6AAAAcAAJ?hl=en&gbpv=1&pg=PP" + linkValue                           
-      }
-      
+      }    
       
       else if (["Sul"].includes(field)) {
         linkValue = parseFloat(linkValue) + 119;
