@@ -2,8 +2,6 @@
 // Shared state (commLinkData, selectedBook, selectedLength, current_cell_link) is provided by app.js.
 
     function constructCommLink(field, segment) {
-      
-      local_pdf_dir = "http://localhost:8000/"
     
       segment = segment.replace(/\*/g, "");
       field = field.replace(/\^/g, "");

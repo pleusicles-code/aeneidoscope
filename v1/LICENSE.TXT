@@ -1,5 +1,4 @@
-AeneidoScope © 2025 Dániel Kozák.
-https://latin.elte.hu/copia/
+DRVC © 2026 AUTHOR.
 
 SOFTWARE LICENSE
 
@@ -8,7 +7,7 @@ https://opensource.org/licenses/MIT
 
 DATA LICENSE
 
-All data and visualizations are © 2025 Dániel Kozák.
+All data and visualizations are © 2026 AUTHOR.
 Licensed under the Creative Commons Attribution–NoDerivatives 4.0 International (CC BY-ND 4.0):
 https://creativecommons.org/licenses/by-nd/4.0/
 

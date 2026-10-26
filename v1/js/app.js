@@ -771,7 +771,7 @@ function computeGeneratedStatValue(fn, values) {
 
     const sd = Math.sqrt(variance);
 
-    // AeneidoScope convention: normalized STDEV.
+    // DRVC convention: normalized STDEV.
     const stdev = (sd / Math.abs(mean)) * 100;
 
     if (fn === "STDEV") {
@@ -3043,7 +3043,7 @@ function updateVersion() {
       }
     })
     .catch(error => {
-      console.warn("Unable to check AeneidoScope version status:", error);
+      console.warn("Unable to check DRVC version status:", error);
     });
 }
 
@@ -3089,7 +3089,7 @@ function restoreScroll(tbl, scrollTop) {
 
 
 function constructFilename(extension, mode, segment) {
-  let filename = `AeneidoScope_${version}_`;
+  let filename = `DRVC_${version}_`;
   
   const now = new Date();
   const timestamp = now.toISOString().slice(0, 16).replace("T", "_").replace(":", "-");
@@ -6377,7 +6377,7 @@ function hideSpinner() {
       if (el.id === "corrStatsInfo") {
         uiTooltipTitle = "Correlation functions";
         uiTooltipContent = `
-          <p style="text-align: justify; text-justify: inter-word;"><strong>Spearman's r<sub>s</sub></strong> compares the overall <em>ranking</em> of segments by emphasis in two commentaries, i.e. how similar the ordering from most emphasized to least emphasized segments is. It is the main correlation indicator in <em>AeneidoScope</em>. Its values range between -1 (the rare case of a perfectly reverse ranking of segments) through 0 (no recognizable pattern) to 1 (identical ranking).<br><br><strong>Pearson’s r</strong> compares proportional similarity: it measures whether segments that receive above-average emphasis in one commentary also tend to receive above-average emphasis in the other (and likewise for below-average segments). It also reflects how similar the <em>magnitudes</em> of these deviations from the average are, regardless of the resulting absolute ranks. As a consequence, <strong>r</strong> may be higher than <strong>r<sub>s</sub></strong> in some cases.<br><br>
+          <p style="text-align: justify; text-justify: inter-word;"><strong>Spearman's r<sub>s</sub></strong> compares the overall <em>ranking</em> of segments by emphasis in two commentaries, i.e. how similar the ordering from most emphasized to least emphasized segments is. It is the main correlation indicator in <em>DRVC</em>. Its values range between -1 (the rare case of a perfectly reverse ranking of segments) through 0 (no recognizable pattern) to 1 (identical ranking).<br><br><strong>Pearson’s r</strong> compares proportional similarity: it measures whether segments that receive above-average emphasis in one commentary also tend to receive above-average emphasis in the other (and likewise for below-average segments). It also reflects how similar the <em>magnitudes</em> of these deviations from the average are, regardless of the resulting absolute ranks. As a consequence, <strong>r</strong> may be higher than <strong>r<sub>s</sub></strong> in some cases.<br><br>
           When one commentary records only the presence or absence of notes (e.g. Beroaldo), Spearman is not reported because the large number of tied ranks would make its value not directly comparable with those of regular commentary pairings. In such cases, only Pearson is calculated.</p>`;
       }
 
