@@ -156,10 +156,12 @@
           constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10192348?page=" + linkValue
         } else if (["MiscMod"].includes(field)) {
           constructedLink = "https://digitale-sammlungen.de/en/view/bsb10171386?page=" + (Number(linkValue) * 2 + 21);
-        }            
+        } else if (["MiscDat"].includes(field)) {
+          constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10195834?page=" + linkValue
+        }                      
       }            
           
-      else if (["Bad"].includes(field)) {
+      else if (["Bad", "BadE"].includes(field)) {
         linkValue = parseFloat(linkValue);
         constructedLink = "https://www.digitale-sammlungen.de/en/view/bsb10195834?page=" + linkValue
       }            
