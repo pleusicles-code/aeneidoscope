@@ -430,6 +430,12 @@
         headerVertical: "flip",
         cssClass: "header-period2",                                
       },
+      "^BadE^": {
+        title: "Badius (without Don.)",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "header-period2 thin-padding-left header-thin-padding",                                
+      },        
       "Cam": {
         title: "Camynade",
         hozAlign: "center",
@@ -1089,6 +1095,12 @@
         headerVertical: "flip",
         cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
       },
+      "^MiscDat^": {
+        title: "Dati",
+        hozAlign: "center",
+        headerVertical: "flip",
+        cssClass: "border-bottom sV narrow header-period2 header-thin-padding thin-padding",
+      },        
       "^MiscBon^": {
         title: "M. Bonfini",
         hozAlign: "center",
