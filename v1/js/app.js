@@ -136,7 +136,7 @@ function getBookLacunaLength(field, segment) {
 // PERIODFIELDS
 
 const period1Fields = ["IVM", "Ser", "^Co^", "DS", "TCD", "^sV^", "^Fulg^"];
-const period2Fields = ["^BS^", "BS", "^AnsBNL^", "^AnsPr^", "GdV", "Zon", "^Bero^", "Pom", "Leo", "^Leo^", "Lan", "^TCDLand1^", "^TCDLand2^", "Bad", "Cam", "^Cam^", "^Bra^", "^Bra2^", "Sul", "^Sul^", "Sct", "Prs", "^MiscDC^", "^MiscBon^", "^MiscCos^", "^MiscRho^", "^MiscDel^", "^MiscScoe^"];
+const period2Fields = ["^BS^", "BS", "^AnsBNL^", "^AnsPr^", "GdV", "Zon", "^Bero^", "Pom", "Leo", "^Leo^", "Lan", "^TCDLand1^", "^TCDLand2^", "Bad", "^BadE^", "Cam", "^Cam^", "^Bra^", "^Bra2^", "Sul", "^Sul^", "Sct", "Prs", "^MiscDC^", "^MiscDat^", "^MiscBon^", "^MiscCos^", "^MiscRho^", "^MiscDel^", "^MiscScoe^"];
 const period3Fields = ["Mel", "^Mel^", "^Era^", "^Era2^", "Ery", "Nan", "Be", "Bch", "Rob", "^Hrt^", "Cor", "Man", "^Man^", "^Sca^", "Ho1", "Ho2", "^Ho1^", "^Ho2^", "Reg", "Est", "Mey", "Nas", "^Nas^", "Bers", "Fab", "Ven", "Sgl", "^Sgl^", "^MiscScop^", "^MiscMod^", "^MiscPao^"];
 const period4Fields = ["Pon", "Cer", "Tau", "Ben", "^Ben^", "Abr", "Far", "Min", "Sch", "Mat", "Rue", "Jck", "Kgl", "Coo", "^Coo^", "HB", "^MiscWill^"];
 const period5Fields = ["^Hex^", "^H1^", "^H2^", "H3", "HW", "For", "Pkp", "Con", "^Con^", "CN", "^Hen^", "Wnr", "Lwg", "Sab", "Kap"];
@@ -10117,7 +10117,7 @@ function hideSpinner() {
       
       table.getColumns().forEach(col => {
         const field = col.getField();
-        if (field && field.startsWith(prefix)) {
+        if (field && (field.startsWith(prefix) || (checkboxId === "toggleTCDLand" && field === "^BadE^"))) {
 
           show ? col.show() : col.hide();
         }
@@ -10371,7 +10371,7 @@ function hideSpinner() {
             (!document.getElementById("toggleVer").checked && field.startsWith("^sV")) ||
             (!document.getElementById("toggleAnselm").checked && field.startsWith("^Ans")) ||
             (!document.getElementById("toggleBeroaldo").checked && field.startsWith("^Bero")) ||
-            (!document.getElementById("toggleTCDLand").checked && field.startsWith("^TCDLand")) ||
+            (!document.getElementById("toggleTCDLand").checked && (field.startsWith("^TCDLand") || field === "^BadE^")) ||
             (!document.getElementById("toggleBrant").checked && field.startsWith("^Bra")) ||
             (!document.getElementById("toggleVal").checked && field.startsWith("^Val")) ||
             (!document.getElementById("toggleEra").checked && field.startsWith("^Era")) ||
