@@ -12577,6 +12577,78 @@ function hideSpinner() {
     })();
     
 
+
+    // Freeze an exploratory shortlist as an ordinary, pasteable Segment filter.
+    // Book-overview labels require bare numbers ("1 12"), since "Aen. 01"
+    // contains a space and would otherwise become two OR filter terms.
+    function visibleSegmentFilterText(activeRows, bookOverview) {
+      const segments = activeRows
+        .map(row => row.getData())
+        .filter(data => data && !data.__mergeResult)
+        .map(data => String(data.Segment ?? "").trim())
+        .filter(Boolean)
+        .map(segment => {
+          if (!bookOverview) return segment;
+          const book = segment.match(/^Aen\.\s*(\d{1,2})$/i);
+          return book ? String(Number(book[1])) : segment;
+        });
+      return [...new Set(segments)].join(" ");
+    }
+
+    async function copyVisibleSegments() {
+      if (!table) return;
+      const filterText = visibleSegmentFilterText(
+        table.getRows("active"), selectedBook == 0
+      );
+      if (!filterText) {
+        showTransientMessage("No visible segments to copy.", 6000);
+        return;
+      }
+
+      let copied = false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(filterText);
+          copied = true;
+        }
+      } catch (err) {
+        console.warn("Clipboard API unavailable; trying fallback.", err);
+      }
+
+      if (!copied) {
+        const input = document.createElement("textarea");
+        input.value = filterText;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.left = "-9999px";
+        document.body.appendChild(input);
+        input.select();
+        try {
+          copied = document.execCommand("copy");
+        } catch (err) {
+          console.warn("Clipboard fallback failed.", err);
+        } finally {
+          input.remove();
+        }
+      }
+
+      if (copied) {
+        const count = filterText.split(/\s+/).length;
+        showTransientMessage(
+          "Copied <strong>" + count + " visible segment" +
+            (count === 1 ? "" : "s") + "</strong> to clipboard. " +
+          "Paste into the Segment filter (<strong>,</strong> to focus it); " +
+          "clear other row filters before switching modes.",
+          12000
+        );
+      } else {
+        showTransientMessage(
+          "Could not access the clipboard. Check clipboard permissions and retry.",
+          9000
+        );
+      }
+    }
+
     // Global keyboard shortcuts
     document.addEventListener("keydown", function (e) {
 
@@ -12808,6 +12880,12 @@ function hideSpinner() {
           }
         }        
         
+        // v → copy the currently visible, sorted segment IDs as a filter list.
+        if (e.key === "v") {
+          e.preventDefault();
+          if (!e.repeat) void copyVisibleSegments();
+        }
+
         const exportMap = {
           l: "exportLink",
           j: "exportCsv",
