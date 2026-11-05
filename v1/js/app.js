@@ -1201,7 +1201,7 @@ function getBookTrendSourceFieldsFallback(referenceRow) {
     ["Mel", "^Sgl^"],
     ["Pon", "HB"],
     ["^H1^", "Sab"],
-    ["Pag", "LASTCOL"]
+    ["Pag", "Gar"]
   ];
   const groups = bounds.map(([first, last]) => {
     const start = headers.indexOf(first);
@@ -1216,10 +1216,23 @@ function getBookTrendSourceFieldsFallback(referenceRow) {
 function getPeriodContributingCounts(rowData) {
   const originalsData = Array.isArray(dataXlsx) ? dataXlsx : [];
   const referenceRow = originalsData.find(row => row?.Segment) ?? rowData;
-  const sourceFields = periodTrendSourceFields?.length === 6
-    ? periodTrendSourceFields
-    : (selectedBook === 0 ? getBookTrendSourceFieldsFallback(referenceRow) : null);
-  if (!sourceFields || !rowData) return null;
+  // In the books view use the workbook's verified commentary ranges,
+  // independently of the formula metadata that may be missing at runtime.
+  const bookFields = selectedBook === 0
+    ? getBookTrendSourceFieldsFallback(referenceRow)
+    : null;
+  const sourceFields = selectedBook === 0
+    ? (bookFields || periodTrendSourceFields)
+    : periodTrendSourceFields;
+  if (!sourceFields || !rowData) {
+    console.warn("Trends contributor count: source fields unavailable", {
+      selectedBook,
+      formulaSourceGroups: periodTrendSourceFields?.length ?? null,
+      bookSourceGroups: bookFields?.length ?? null,
+      referenceRowKeys: Object.keys(referenceRow ?? {}).length
+    });
+    return null;
+  }
 
   const bySegment = new Map(originalsData.map(row =>
     [String(row.Segment ?? "").trim(), row]
