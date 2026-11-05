@@ -9850,6 +9850,7 @@ function hideSpinner() {
     }
         
     function menuSelectorClick(newBook, newLength, newScope, changeType, filter) {
+      restoreTemporarilyHiddenEmptyColumns();
       const scopeMergeSnapshot =
         changeType === "scope" && newBook == selectedBook &&
         newLength === selectedLength && newScope !== selectedScope
@@ -11149,6 +11150,7 @@ function hideSpinner() {
       });      
       
       table.on("dataSorted", function(sorters, rows){
+        restoreEmptyColumnsIfViewChanged(table, rows, true);
         scheduleSegmentRankRefresh(table);
         if (sorters.length === 0) return;
         
@@ -11316,6 +11318,7 @@ function hideSpinner() {
       });
       
       table.on("dataFiltered", function(filters, rows){
+        restoreEmptyColumnsIfViewChanged(table, rows);
         updateFilterFeedback(filters);
         scheduleSegmentRankRefresh(table);
       });      
@@ -12578,6 +12581,105 @@ function hideSpinner() {
     
 
 
+
+    // Temporary, view-local hiding of blank data columns (shortcut: e).
+    // Zero is deliberately NOT empty: a zero-density commentary is valid data.
+    const emptyColumnProtectedFields = new Set(["Segment", "Plot", "DYN", "Index"]);
+    let temporarilyHiddenEmptyColumns = null;
+
+    function visibleSegmentOrderSignature(rows, preserveOrder = true) {
+      const segments = (rows || [])
+        .map(row => row.getData())
+        .filter(data => data && !data.__mergeResult)
+        .map(data => String(data.Segment ?? ""));
+      return (preserveOrder ? segments : segments.sort()).join("\u0000");
+    }
+
+    function restoreTemporarilyHiddenEmptyColumns() {
+      const snapshot = temporarilyHiddenEmptyColumns;
+      if (!snapshot) return;
+      // Clear first: column visibility changes may trigger other table events.
+      temporarilyHiddenEmptyColumns = null;
+      if (snapshot.table !== table) return;
+      snapshot.fields.forEach(field => {
+        const col = table.getColumn(field);
+        if (col && !col.isVisible()) col.show();
+      });
+    }
+
+    function restoreEmptyColumnsIfViewChanged(sourceTable, rows, preserveOrder = false) {
+      const snapshot = temporarilyHiddenEmptyColumns;
+      if (!snapshot || snapshot.table !== sourceTable) return;
+      const signature = visibleSegmentOrderSignature(rows, preserveOrder);
+      const original = preserveOrder ? snapshot.segments : snapshot.segmentSet;
+      if (signature !== original) restoreTemporarilyHiddenEmptyColumns();
+    }
+
+    function isBlankEmptyColumnValue(value) {
+      return value == null ||
+        (typeof value === "string" && value.trim() === "") ||
+        (typeof value === "number" && Number.isNaN(value));
+    }
+
+    function hideEmptyColumnsInCurrentView() {
+      if (!table) return;
+      const rows = (table.getRows("active") || [])
+        .filter(row => !row.getData()?.__mergeResult);
+
+      if (!rows.length) {
+        showTransientMessage("No visible segments; no columns were hidden.", 7000);
+        return;
+      }
+
+      if (temporarilyHiddenEmptyColumns?.table === table) {
+        restoreTemporarilyHiddenEmptyColumns();
+      }
+
+      const columnsToHide = table.getColumns().filter(col => {
+        const field = col.getField();
+        if (!field || !col.isVisible() || emptyColumnProtectedFields.has(field)) {
+          return false;
+        }
+        return rows.every(row =>
+          isBlankEmptyColumnValue(row.getData()[field])
+        );
+      });
+
+      if (!columnsToHide.length) {
+        showTransientMessage("No completely empty visible columns found.", 7000);
+        return;
+      }
+
+      temporarilyHiddenEmptyColumns = {
+        table,
+        fields: columnsToHide.map(col => col.getField()),
+        segments: visibleSegmentOrderSignature(rows),
+        segmentSet: visibleSegmentOrderSignature(rows, false)
+      };
+
+      columnsToHide.forEach(col => col.hide());
+      const count = columnsToHide.length;
+      showTransientMessage(
+        "Temporarily hid <strong>" + count + " empty column" +
+          (count === 1 ? "" : "s") + "</strong> for the " +
+          rows.length + " currently visible segment" +
+          (rows.length === 1 ? "" : "s") +
+          ". They will reappear when the view or filters change.",
+        10000
+      );
+    }
+
+    // Restore before a non-table control changes period, basis, scope, or
+    // commentary visibility; row filter changes are covered by Tabulator events.
+    document.addEventListener("change", event => {
+      if (!temporarilyHiddenEmptyColumns) return;
+      if (event.target?.closest?.("#table-container")) return;
+      restoreTemporarilyHiddenEmptyColumns();
+    }, true);
+    document.getElementById("columnFilterInput")?.addEventListener("input", () => {
+      restoreTemporarilyHiddenEmptyColumns();
+    }, true);
+
     // Freeze an exploratory shortlist as an ordinary, pasteable Segment filter.
     // Book-overview labels require bare numbers ("1 12"), since "Aen. 01"
     // contains a space and would otherwise become two OR filter terms.
@@ -12880,6 +12982,12 @@ function hideSpinner() {
           }
         }        
         
+        // e → hide columns that are blank in every currently visible row.
+        if (e.key === "e") {
+          e.preventDefault();
+          if (!e.repeat) hideEmptyColumnsInCurrentView();
+        }
+
         // v → copy the currently visible, sorted segment IDs as a filter list.
         if (e.key === "v") {
           e.preventDefault();
