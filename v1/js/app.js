@@ -1199,14 +1199,23 @@ function getPeriodContributingCounts(rowData) {
   const bySegment = new Map(dataXlsx.map(row =>
     [String(row.Segment ?? "").trim(), row]
   ));
+  // Book-level rows have a stable Link (1–12), even if the displayed Segment
+  // label differs from the original worksheet value. Other views have
+  // non-unique Link values, so they must continue to use Segment.
+  const byBookLink = selectedBook === 0
+    ? new Map(dataXlsx.map(row => [String(row.Link ?? "").trim(), row]))
+    : null;
   const sourceSegments = rowData?.__mergeResult
     ? mergeSelection?.segments
     : [rowData?.Segment];
   if (!Array.isArray(sourceSegments) || !sourceSegments.length) return null;
 
-  const originals = sourceSegments.map(segment =>
-    bySegment.get(String(segment ?? "").trim())
-  );
+  const originals = rowData?.__mergeResult
+    ? sourceSegments.map(segment => bySegment.get(String(segment ?? "").trim()))
+    : [(
+        (byBookLink && byBookLink.get(String(rowData?.Link ?? "").trim())) ||
+        bySegment.get(String(rowData?.Segment ?? "").trim())
+      )];
   if (originals.some(row => !row)) return null;
 
   const ordinaryCounts = periodTrendSourceFields.map(fields =>
