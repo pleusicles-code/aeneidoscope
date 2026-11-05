@@ -1190,76 +1190,26 @@ function readPeriodTrendSourceFields(sheet) {
   return sources;
 }
 
-// In the all-books workbook, these are the exact first and last
-// commentary columns used by the CO1–CO6 formulas. Derive the actual fields
-// from the loaded column order if formula metadata cannot be read.
-function getBookTrendSourceFieldsFallback(referenceRow) {
-  const headers = Object.keys(referenceRow ?? {});
-  const bounds = [
-    ["Ser", "TCD"],
-    ["^BS^", "^Val^"],
-    ["Mel", "^Sgl^"],
-    ["Pon", "HB"],
-    ["^H1^", "Sab"],
-    ["Pag", "Gar"]
-  ];
-  const groups = bounds.map(([first, last]) => {
-    const start = headers.indexOf(first);
-    const end = headers.indexOf(last);
-    return start >= 0 && end >= start ? headers.slice(start, end + 1) : null;
-  });
-  return groups.every(Array.isArray) ? groups : null;
-}
-
-// Count original numeric cells, irrespective of Basis, sorting, filters or
-// visibility. Merged rows count a commentary once across selected segments.
+// Count cells from the original XLSX data, irrespective of the current Basis,
+// sorting, filters or column visibility. For merges, count each commentary
+// once if it has data in at least one source segment.
 function getPeriodContributingCounts(rowData) {
-  const originalsData = Array.isArray(dataXlsx) ? dataXlsx : [];
-  const referenceRow = originalsData.find(row => row?.Segment) ?? rowData;
-  // In the books view use the workbook's verified commentary ranges,
-  // independently of the formula metadata that may be missing at runtime.
-  const bookFields = selectedBook === 0
-    ? getBookTrendSourceFieldsFallback(referenceRow)
-    : null;
-  const sourceFields = selectedBook === 0
-    ? (bookFields || periodTrendSourceFields)
-    : periodTrendSourceFields;
-  if (!sourceFields || !rowData) {
-    console.warn("Trends contributor count: source fields unavailable", {
-      selectedBook,
-      formulaSourceGroups: periodTrendSourceFields?.length ?? null,
-      bookSourceGroups: bookFields?.length ?? null,
-      referenceRowKeys: Object.keys(referenceRow ?? {}).length
-    });
-    return null;
-  }
+  if (!periodTrendSourceFields || !Array.isArray(dataXlsx)) return null;
 
-  const bySegment = new Map(originalsData.map(row =>
+  const bySegment = new Map(dataXlsx.map(row =>
     [String(row.Segment ?? "").trim(), row]
   ));
-  // Link uniquely identifies the 12 rows in the books workbook.
-  const byBookLink = selectedBook === 0
-    ? new Map(originalsData.map(row => [String(row.Link ?? "").trim(), row]))
-    : null;
-  const sourceSegments = rowData.__mergeResult
+  const sourceSegments = rowData?.__mergeResult
     ? mergeSelection?.segments
-    : [rowData.Segment];
+    : [rowData?.Segment];
   if (!Array.isArray(sourceSegments) || !sourceSegments.length) return null;
 
-  let originals = rowData.__mergeResult
-    ? sourceSegments.map(segment => bySegment.get(String(segment ?? "").trim()))
-    : [(
-        (byBookLink && byBookLink.get(String(rowData.Link ?? "").trim())) ||
-        bySegment.get(String(rowData.Segment ?? "").trim())
-      )];
-  // For a normal row, the table's underlying data can be used directly
-  // if its original-row lookup is unavailable.
-  if (originals.some(row => !row)) {
-    if (rowData.__mergeResult) return null;
-    originals = [rowData];
-  }
+  const originals = sourceSegments.map(segment =>
+    bySegment.get(String(segment ?? "").trim())
+  );
+  if (originals.some(row => !row)) return null;
 
-  const ordinaryCounts = sourceFields.map(fields =>
+  const ordinaryCounts = periodTrendSourceFields.map(fields =>
     fields.reduce((sum, field) =>
       sum + (originals.some(row =>
         typeof row[field] === "number" && Number.isFinite(row[field])
@@ -9984,6 +9934,14 @@ function hideSpinner() {
 
             // Identify the actual inputs to CO1–CO6 from the unmodified worksheet.
             periodTrendSourceFields = readPeriodTrendSourceFields(sheet);
+            // The 13th (all-books scenes/passages) worksheet contains aggregated
+            // values but lacks the original CO formula definitions. All thirteen
+            // worksheets share the commentary columns; use the first book's
+            // formulas to recover the same six source groups.
+            if (!periodTrendSourceFields && newBook === 13) {
+              const firstBookSheet = workbook.Sheets[workbook.SheetNames[0]];
+              periodTrendSourceFields = readPeriodTrendSourceFields(firstBookSheet);
+            }
             if (!periodTrendSourceFields) {
               console.warn("Unable to read CO1–CO6 source ranges from the XLSX formulas.");
             }
