@@ -1190,35 +1190,63 @@ function readPeriodTrendSourceFields(sheet) {
   return sources;
 }
 
-// Count cells from the original XLSX data, irrespective of the current Basis,
-// sorting, filters or column visibility. For merges, count each commentary
-// once if it has data in at least one source segment.
-function getPeriodContributingCounts(rowData) {
-  if (!periodTrendSourceFields || !Array.isArray(dataXlsx)) return null;
+// In the all-books workbook, these are the exact first and last
+// commentary columns used by the CO1–CO6 formulas. Derive the actual fields
+// from the loaded column order if formula metadata cannot be read.
+function getBookTrendSourceFieldsFallback(referenceRow) {
+  const headers = Object.keys(referenceRow ?? {});
+  const bounds = [
+    ["Ser", "TCD"],
+    ["^BS^", "^Val^"],
+    ["Mel", "^Sgl^"],
+    ["Pon", "HB"],
+    ["^H1^", "Sab"],
+    ["Pag", "LASTCOL"]
+  ];
+  const groups = bounds.map(([first, last]) => {
+    const start = headers.indexOf(first);
+    const end = headers.indexOf(last);
+    return start >= 0 && end >= start ? headers.slice(start, end + 1) : null;
+  });
+  return groups.every(Array.isArray) ? groups : null;
+}
 
-  const bySegment = new Map(dataXlsx.map(row =>
+// Count original numeric cells, irrespective of Basis, sorting, filters or
+// visibility. Merged rows count a commentary once across selected segments.
+function getPeriodContributingCounts(rowData) {
+  const originalsData = Array.isArray(dataXlsx) ? dataXlsx : [];
+  const referenceRow = originalsData.find(row => row?.Segment) ?? rowData;
+  const sourceFields = periodTrendSourceFields?.length === 6
+    ? periodTrendSourceFields
+    : (selectedBook === 0 ? getBookTrendSourceFieldsFallback(referenceRow) : null);
+  if (!sourceFields || !rowData) return null;
+
+  const bySegment = new Map(originalsData.map(row =>
     [String(row.Segment ?? "").trim(), row]
   ));
-  // Book-level rows have a stable Link (1–12), even if the displayed Segment
-  // label differs from the original worksheet value. Other views have
-  // non-unique Link values, so they must continue to use Segment.
+  // Link uniquely identifies the 12 rows in the books workbook.
   const byBookLink = selectedBook === 0
-    ? new Map(dataXlsx.map(row => [String(row.Link ?? "").trim(), row]))
+    ? new Map(originalsData.map(row => [String(row.Link ?? "").trim(), row]))
     : null;
-  const sourceSegments = rowData?.__mergeResult
+  const sourceSegments = rowData.__mergeResult
     ? mergeSelection?.segments
-    : [rowData?.Segment];
+    : [rowData.Segment];
   if (!Array.isArray(sourceSegments) || !sourceSegments.length) return null;
 
-  const originals = rowData?.__mergeResult
+  let originals = rowData.__mergeResult
     ? sourceSegments.map(segment => bySegment.get(String(segment ?? "").trim()))
     : [(
-        (byBookLink && byBookLink.get(String(rowData?.Link ?? "").trim())) ||
-        bySegment.get(String(rowData?.Segment ?? "").trim())
+        (byBookLink && byBookLink.get(String(rowData.Link ?? "").trim())) ||
+        bySegment.get(String(rowData.Segment ?? "").trim())
       )];
-  if (originals.some(row => !row)) return null;
+  // For a normal row, the table's underlying data can be used directly
+  // if its original-row lookup is unavailable.
+  if (originals.some(row => !row)) {
+    if (rowData.__mergeResult) return null;
+    originals = [rowData];
+  }
 
-  const ordinaryCounts = periodTrendSourceFields.map(fields =>
+  const ordinaryCounts = sourceFields.map(fields =>
     fields.reduce((sum, field) =>
       sum + (originals.some(row =>
         typeof row[field] === "number" && Number.isFinite(row[field])
