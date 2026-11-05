@@ -8000,6 +8000,120 @@ function hideSpinner() {
     let linkFilter = "NONE";
     let setFilterOnReload = false;
 
+
+    // Segment header ranking: HIGH20 / LOWD / MIDQ, etc. These commands are
+    // deliberately UPPERCASE-ONLY, unlike ordinary Segment text/range searches.
+    const SEGMENT_RANK_COMMAND_RE = /^(HIGH|LOW|MID)(\d+|H|T|Q|D)$/;
+    let segmentRankSelection = null;  // null = pass through for baseline calculation
+    let segmentRankRebuilding = false;
+    let segmentRankScheduledTimer = null;
+    let segmentRankLastTable = null;
+    let segmentRankLastSignature = null;
+
+    function parseSegmentRankCommand(value) {
+      const match = String(value ?? "").trim().match(SEGMENT_RANK_COMMAND_RE);
+      return match ? { place: match[1], amount: match[2] } : null;
+    }
+
+    function segmentRankCommandFromTable(sourceTable) {
+      const filter = sourceTable.getHeaderFilters().find(f => f.field === "Segment");
+      return parseSegmentRankCommand(filter?.value);
+    }
+
+    // Select exact row positions, not numeric thresholds: tied values do not
+    // expand the result, and HIGH/LOW always mean first/last in current sort order.
+    function chooseSegmentRankRows(sortedRows, command) {
+      const n = sortedRows.length;
+      if (!n) return [];
+      const denominators = { H: 2, T: 3, Q: 4, D: 10 };
+      const rawCount = /^\d+$/.test(command.amount)
+        ? Number(command.amount)
+        : Math.ceil(n / denominators[command.amount]);
+      const count = Math.max(1, Math.min(n, rawCount));
+      const start = command.place === "LOW" ? n - count
+        : command.place === "MID" ? Math.floor((n - count) / 2) : 0;
+      return sortedRows.slice(start, start + count);
+    }
+
+    function segmentRankSignature(sourceTable) {
+      const sorters = sourceTable.getSorters() || [];
+      const sortFields = sorters.map(s => s.field === "DYN"
+        ? currentTrendSortValue : s.field === "IVM" ? currentIVMSortValue : s.field);
+      const others = sourceTable.getHeaderFilters()
+        .filter(f => f.field !== "Segment")
+        .map(f => [f.field, f.value]);
+      const programmatic = (sourceTable.getFilters() || [])
+        .map(f => [f.field, f.type, f.value]);
+      // Include sort-source values so recalculation of TYP/CO/commentary values
+      // also invalidates the ranking even when the sort field has not changed.
+      const values = sourceTable.getRows().map(row => {
+        const d = row.getData();
+        return [d.Segment, ...sortFields.map(field => d[field])];
+      });
+      return JSON.stringify([sourceTable.getHeaderFilters()
+        .find(f => f.field === "Segment")?.value, sorters.map(s => [s.field, s.dir]),
+        others, programmatic, values]);
+    }
+
+    function refreshSegmentRankSelection(sourceTable, signature) {
+      if (segmentRankRebuilding || sourceTable !== table) return;
+      const command = segmentRankCommandFromTable(sourceTable);
+      if (!command) {
+        segmentRankSelection = null;
+        segmentRankLastSignature = null;
+        return;
+      }
+
+      segmentRankRebuilding = true;
+      try {
+        // Tabulator applies header filters before sorting. Temporarily make
+        // only the Segment rank condition a pass-through, leaving all other
+        // header filters and programmatic filters in effect.
+        segmentRankSelection = null;
+        sourceTable.refreshFilter();
+        const eligible = sourceTable.getRows("active")
+          .filter(row => !row.getData()?.__mergeResult);
+        const selected = chooseSegmentRankRows(eligible, command);
+        segmentRankSelection = new Set(selected.map(row =>
+          String(row.getData().Segment ?? "").trim()
+        ));
+        segmentRankLastTable = sourceTable;
+        segmentRankLastSignature = signature;
+        sourceTable.refreshFilter();
+      } finally {
+        segmentRankRebuilding = false;
+      }
+    }
+
+    function scheduleSegmentRankRefresh(sourceTable) {
+      if (segmentRankRebuilding || sourceTable !== table) return;
+      const command = segmentRankCommandFromTable(sourceTable);
+      if (!command) {
+        segmentRankSelection = null;
+        segmentRankLastSignature = null;
+        segmentRankLastTable = null;
+        return;
+      }
+      const signature = segmentRankSignature(sourceTable);
+      if (sourceTable === segmentRankLastTable &&
+          signature === segmentRankLastSignature) return;
+
+      clearTimeout(segmentRankScheduledTimer);
+      segmentRankScheduledTimer = setTimeout(() => {
+        segmentRankScheduledTimer = null;
+        if (sourceTable !== table) return;
+        refreshSegmentRankSelection(sourceTable, segmentRankSignature(sourceTable));
+      }, 0);
+    }
+
+    function resetSegmentRankSelection() {
+      clearTimeout(segmentRankScheduledTimer);
+      segmentRankScheduledTimer = null;
+      segmentRankSelection = null;
+      segmentRankLastTable = null;
+      segmentRankLastSignature = null;
+    }
+
     // Reusable filtering function generator
     function createBooleanHeaderFilterFunc(columnName) {
 
@@ -8270,6 +8384,13 @@ function hideSpinner() {
         statState = "";
 
         if (!headerValue) return true;
+
+        // Ranking syntax is case-sensitive and applies ONLY to Segment.
+        // Null selection passes all rows while we calculate the sorted baseline.
+        if (columnName === "Segment" && parseSegmentRankCommand(headerValue)) {
+          return segmentRankSelection === null ||
+            segmentRankSelection.has(String(rowData?.Segment ?? rowValue ?? "").trim());
+        }
 
         const cellStr = (rowValue || "").toString().toLowerCase();
         let filterStr = headerValue.toString().toLowerCase().trim();
@@ -10933,6 +11054,7 @@ function hideSpinner() {
     
     if (data.length > 0) data[0]["DYN"] = "";
     
+    resetSegmentRankSelection();
     if (table) {
       table.destroy();
     }
@@ -11027,6 +11149,7 @@ function hideSpinner() {
       });      
       
       table.on("dataSorted", function(sorters, rows){
+        scheduleSegmentRankRefresh(table);
         if (sorters.length === 0) return;
         
         clearHighlightClasses();
@@ -11194,6 +11317,7 @@ function hideSpinner() {
       
       table.on("dataFiltered", function(filters, rows){
         updateFilterFeedback(filters);
+        scheduleSegmentRankRefresh(table);
       });      
       
       table.on("cellMouseEnter", function(e, cell){
