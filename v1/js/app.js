@@ -258,7 +258,8 @@ const GENERATED_STAT_FUNCTIONS = new Set([
   "CANONT",  
   "CANONS",
   "CANONC",
-  "DIFF"
+  "DIFF",
+  "RATIO"
 ]);
 
 const EXPLICIT_GENERATED_STAT_SOURCE_FIELDS = new Set([
@@ -584,6 +585,43 @@ function resolveGeneratedStatSelector(selector, eligibleCols) {
 function resolveGeneratedStatSourceFields(spec) {
   const eligibleCols = getVisibleEligibleStatColumns();
 
+  // RATIO is ordered: A/B must follow the argument order, not table order.
+  // Unlike aggregations, each argument must resolve to exactly one column.
+  if (spec.fn === "RATIO") {
+    const selectors = spec.selectors || [];
+
+    if (selectors.length !== 2) {
+      return {
+        fields: [],
+        labels: [],
+        unresolvedSelectors: [],
+        error: "RATIO requires exactly two comma-separated column names (e.g. RATIO(Serv,CO2)).",
+      };
+    }
+
+    const selected = selectors.map(selector =>
+      selector.includes("-")
+        ? null // Ranges are not valid operands for a two-column ratio.
+        : findFirstEligibleColumnByToken(selector, eligibleCols)
+    );
+    const unresolvedSelectors = selectors.filter((_, index) => !selected[index]);
+
+    if (unresolvedSelectors.length) {
+      return {
+        fields: [],
+        labels: [],
+        unresolvedSelectors,
+        error: `RATIO: cannot resolve column(s): ${unresolvedSelectors.join(", ")}.`,
+      };
+    }
+
+    return {
+      fields: selected.map(info => info.field),
+      labels: selected.map(info => info.title || info.field),
+      unresolvedSelectors: [],
+    };
+  }
+
   if (!eligibleCols.length) {
     return {
       fields: [],
@@ -729,6 +767,14 @@ function computeGeneratedStatValue(fn, values) {
   if (fn === "DIFF") {
     if (n < 2) return null;
     return Math.abs(xs[0] - xs[1]);
+  }
+
+  if (fn === "RATIO") {
+    // The resolver supplies exactly two values in argument order.
+    // Missing/non-numeric operands or division by zero produce a blank cell.
+    if (n !== 2 || xs[1] === 0) return null;
+    const ratio = xs[0] / xs[1];
+    return Number.isFinite(ratio) ? ratio : null;
   }  
   
   if (fn === "MEAN") {
@@ -827,6 +873,7 @@ function formatGeneratedStatValue(fn, value) {
   if (value == null || !Number.isFinite(value)) return "";
 
   if (fn === "ZEROES") return String(Math.round(value));
+  if (fn === "RATIO") return value.toFixed(2);
 
   return value.toFixed(1);
 }
@@ -1054,6 +1101,11 @@ function refreshGeneratedStatColumns() {
 
   specs.forEach(spec => {
     const resolved = resolveGeneratedStatSourceFields(spec);
+
+    if (resolved.error) {
+      showTransientMessage?.(resolved.error, 5000);
+      return;
+    }
 
     if (!resolved.fields.length) {
       showTransientMessage?.(
