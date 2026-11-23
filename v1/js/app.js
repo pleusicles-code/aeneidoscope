@@ -27,6 +27,30 @@ const SCATTER_GLYPH_SVG = `
 </svg>`;
 
 const alwaysVisibleColumns = ["Segment", "Plot"];
+// Display-only profile values are independent of the TRENDS cumulative setting.
+const profileColumnFields = ["TYP", ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}`),
+  ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}c`)];
+let profileViewSignature = null;
+function resetTemporaryProfileColumns() {
+  profileViewSignature = null;
+  if (!table) return;
+  for (const field of profileColumnFields) {
+    const col = table.getColumn(field);
+    if (col?.isVisible()) col.hide();
+  }
+}
+function toggleTemporaryProfileColumns(fields) {
+  if (!table || document.getElementById("toggleColumnFilter")?.checked) return;
+  const cols = fields.map(field => table.getColumn(field)).filter(Boolean);
+  if (!cols.length) return;
+  const show = cols.some(col => !col.isVisible());
+  for (const col of cols) {
+    if (show && !col.isVisible()) col.show();
+    else if (!show && col.isVisible()) col.hide();
+  }
+  profileViewSignature = profileColumnFields.some(field => table.getColumn(field)?.isVisible())
+    ? visibleSegmentOrderSignature(table.getRows("active") || [], false) : null;
+}
 const noChangeColumns = ["Index"];
 const alwaysHiddenColumns = ["Tags", "Scene", "Section", "Link", "Length", "^IVM^", "^IVM1^", "^IVM2^", "^IVM3^", "^IVM12^", "TYP", "CO1", "CO2", "CO3", "CO4", "CO5", "CO6", "cit_IVM1", "cit_IVM2", "cit_IVM3", "^linkBra^", "copy_TYP", "copy_CO1", "copy_CO2", "copy_CO3", "copy_CO4", "copy_CO5", "copy_CO6"];  // adjust to your project  
 
@@ -1280,6 +1304,11 @@ function normalizeCumulativeTrendFields(data) {
   const cumulative = useCumulativeTables();
 
   data.forEach(row => {
+    // Preserve original period profiles before the working CO fields are overwritten.
+    for (let i = 1; i <= 6; i++) {
+      row[`profile_CO${i}`] = row[`CO${i}`];
+      row[`profile_CO${i}c`] = row[`CO${i}c`];
+    }
     if (cumulative) {
       // Replace the standard CO fields with the cumulative set.
       // From this point onward, the rest of the code can keep using CO1–CO6.
@@ -5421,6 +5450,7 @@ function hideSpinner() {
     document.getElementById("toggleColumnFilter").addEventListener("change", function() {
       const inputField = document.getElementById("columnFilterInput");
       if (this.checked) {
+        resetTemporaryProfileColumns();
         inputField.style.display = "inline-block";
 
         // take a snapshot of currently visible columns
@@ -9903,6 +9933,7 @@ function hideSpinner() {
         
     function menuSelectorClick(newBook, newLength, newScope, changeType, filter) {
       restoreTemporarilyHiddenEmptyColumns();
+      resetTemporaryProfileColumns();
       const scopeMergeSnapshot =
         changeType === "scope" && newBook == selectedBook &&
         newLength === selectedLength && newScope !== selectedScope
@@ -10518,7 +10549,11 @@ function hideSpinner() {
       const filteredHeaders = headers.filter(field => field !== "Index");
       
       const columns = filteredHeaders.map(field => {
-        const base = columnFormatMap[field] || { title: field };
+        const profileMatch = /^profile_CO([1-6])(c?)$/.exec(field);
+        const base = profileMatch
+          ? {title: `Period ${profileMatch[1]} Typical${profileMatch[2] ? " (cumul.)" : ""}`}
+          : field === "TYP" ? {...(columnFormatMap[field] || {}), title: "Typical"}
+          : columnFormatMap[field] || {title: field};
 
         return {
           ...base,
@@ -10534,6 +10569,7 @@ function hideSpinner() {
             field === "Tags" ||
             field === "LASTCOL" ||
             field === "TYP" ||
+            field.startsWith("profile_CO") ||
             field.startsWith("copy_") ||
             field.startsWith("CO") ||
             field.startsWith("cit_IVM") ||
@@ -11379,6 +11415,10 @@ function hideSpinner() {
       
       table.on("dataFiltered", function(filters, rows){
         restoreEmptyColumnsIfViewChanged(table, rows);
+        if (profileViewSignature !== null &&
+            visibleSegmentOrderSignature(rows, false) !== profileViewSignature) {
+          resetTemporaryProfileColumns();
+        }
         updateFilterFeedback(filters);
         scheduleSegmentRankRefresh(table);
       });      
@@ -12810,6 +12850,25 @@ function hideSpinner() {
         );
       }
     }
+
+    // Physical Digit keys avoid differing shifted numbers on keyboard layouts.
+    // Ctrl+Shift+1..7 toggles ordinary periods / Typical; 8 toggles all periods.
+    // With Alt, 1..6 and 8 toggle the cumulative profiles instead.
+    document.addEventListener("keydown", function (e) {
+      if (!e.ctrlKey || !e.shiftKey || e.metaKey || e.repeat) return;
+      if (e.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+      const match = /^Digit([1-8])$/.exec(e.code);
+      if (!match) return;
+      const n = Number(match[1]);
+      if (e.altKey && n === 7) return;
+      if (!table || document.getElementById("toggleColumnFilter")?.checked) return;
+      const field = i => `profile_CO${i}${e.altKey ? "c" : ""}`;
+      const fields = n === 8 ? Array.from({length:6}, (_,i) => field(i+1))
+                           : [n === 7 ? "TYP" : field(n)];
+      e.preventDefault();
+      e.stopPropagation();
+      toggleTemporaryProfileColumns(fields);
+    }, true);
 
     // Global keyboard shortcuts
     document.addEventListener("keydown", function (e) {
