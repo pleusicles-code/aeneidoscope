@@ -40,7 +40,7 @@ function resetTemporaryProfileColumns() {
   }
 }
 function toggleTemporaryProfileColumns(fields) {
-  if (!table || document.getElementById("toggleColumnFilter")?.checked) return;
+  if (!table) return;
   const cols = fields.map(field => table.getColumn(field)).filter(Boolean);
   if (!cols.length) return;
   const show = cols.some(col => !col.isVisible());
@@ -5450,7 +5450,6 @@ function hideSpinner() {
     document.getElementById("toggleColumnFilter").addEventListener("change", function() {
       const inputField = document.getElementById("columnFilterInput");
       if (this.checked) {
-        resetTemporaryProfileColumns();
         inputField.style.display = "inline-block";
 
         // take a snapshot of currently visible columns
@@ -5475,6 +5474,7 @@ function hideSpinner() {
         // restore original visibility
         table.getColumns().forEach(col => {
           const field = col.getField();
+          if (profileColumnFields.includes(field)) return; // shortcut state is independent
           if (preFilterVisibleColumns.includes(field)) {
             col.show();
           } else {
@@ -5597,6 +5597,7 @@ function hideSpinner() {
         table.getColumns().forEach(col => {
           const field = col.getField ? col.getField() : null;
           if (!field) return;
+          if (profileColumnFields.includes(field)) return;
 
           if (Array.isArray(noChangeColumns) && noChangeColumns.includes(field)) {
             return;
@@ -5772,6 +5773,7 @@ function hideSpinner() {
       for (const col of cols) {
         const field = col.getField ? col.getField() : null;
         if (!field) continue;
+        if (profileColumnFields.includes(field)) continue; // independent of filter terms
 
         // fixed rules first (skip/no-op batching)
         if (Array.isArray(noChangeColumns) && noChangeColumns.includes(field)) {
@@ -12856,12 +12858,13 @@ function hideSpinner() {
     // With Alt, 1..6 and 8 toggle the cumulative profiles instead.
     document.addEventListener("keydown", function (e) {
       if (!e.ctrlKey || !e.shiftKey || e.metaKey || e.repeat) return;
-      if (e.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+      const editing = e.target?.closest?.("input, textarea, select, [contenteditable]");
+      if (editing && editing.id !== "columnFilterInput") return;
       const match = /^Digit([1-8])$/.exec(e.code);
       if (!match) return;
       const n = Number(match[1]);
       if (e.altKey && n === 7) return;
-      if (!table || document.getElementById("toggleColumnFilter")?.checked) return;
+      if (!table) return;
       const field = i => `profile_CO${i}${e.altKey ? "c" : ""}`;
       const fields = n === 8 ? Array.from({length:6}, (_,i) => field(i+1))
                            : [n === 7 ? "TYP" : field(n)];
