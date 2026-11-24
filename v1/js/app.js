@@ -12878,7 +12878,7 @@ function hideSpinner() {
 
     // Physical Digit keys avoid differing shifted numbers on keyboard layouts.
     // Ctrl+Shift+1..7 toggles ordinary periods / Typical; 8 toggles all periods.
-    // With Alt, 1..6 and 8 toggle the cumulative profiles instead.
+    // With AltGr, 1..6 and 8 toggle the cumulative profiles instead.
     document.addEventListener("keydown", function (e) {
       if (!e.ctrlKey || !e.shiftKey || e.metaKey || e.repeat) return;
       const editing = e.target?.closest?.("input, textarea, select, [contenteditable]");
@@ -12886,9 +12886,12 @@ function hideSpinner() {
       const match = /^Digit([1-8])$/.exec(e.code);
       if (!match) return;
       const n = Number(match[1]);
-      if (e.altKey && n === 7) return;
+      // On Linux/Wayland AltGr is exposed as the AltGraph modifier.
+      // Do not infer cumulative mode from e.altKey (ordinary Alt differs).
+      const cumulative = e.getModifierState("AltGraph");
+      if (cumulative && n === 7) return;
       if (!table) return;
-      const field = i => `profile_CO${i}${e.altKey ? "c" : ""}`;
+      const field = i => `profile_CO${i}${cumulative ? "c" : ""}`;
       const fields = n === 8 ? Array.from({length:6}, (_,i) => field(i+1))
                            : [n === 7 ? "TYP" : field(n)];
       e.preventDefault();
