@@ -27,6 +27,16 @@ const SCATTER_GLYPH_SVG = `
 </svg>`;
 
 const alwaysVisibleColumns = ["Segment", "Plot"];
+
+// p temporarily hides the Plot column; independent of the shareable URL state.
+let plotColumnTemporarilyHidden = false;
+function syncTemporaryPlotVisibility() {
+  if (!table || typeof table.getColumn !== "function") return;
+  const plot = table.getColumn("Plot");
+  if (!plot) return;
+  if (plotColumnTemporarilyHidden && plot.isVisible()) plot.hide();
+  else if (!plotColumnTemporarilyHidden && !plot.isVisible()) plot.show();
+}
 // Display-only profile values are independent of the TRENDS cumulative setting.
 const profileColumnFields = ["TYP", ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}`),
   ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}c`)];
@@ -5475,6 +5485,10 @@ function hideSpinner() {
         table.getColumns().forEach(col => {
           const field = col.getField();
           if (profileColumnFields.includes(field)) return; // shortcut state is independent
+          if (field === "Plot") {
+            syncTemporaryPlotVisibility(); // do not restore stale Plot visibility
+            return;
+          }
           if (preFilterVisibleColumns.includes(field)) {
             col.show();
           } else {
@@ -5599,6 +5613,10 @@ function hideSpinner() {
           if (!field) return;
           if (profileColumnFields.includes(field)) return;
 
+          if (field === "Plot" && plotColumnTemporarilyHidden) {
+            col.hide();
+            return;
+          }
           if (Array.isArray(noChangeColumns) && noChangeColumns.includes(field)) {
             return;
           }
@@ -5774,6 +5792,10 @@ function hideSpinner() {
         const field = col.getField ? col.getField() : null;
         if (!field) continue;
         if (profileColumnFields.includes(field)) continue; // independent of filter terms
+        if (field === "Plot" && plotColumnTemporarilyHidden) {
+          if (col.isVisible()) pending.push([col, false]);
+          continue;
+        }
 
         // fixed rules first (skip/no-op batching)
         if (Array.isArray(noChangeColumns) && noChangeColumns.includes(field)) {
@@ -11564,6 +11586,7 @@ function hideSpinner() {
       });
       
       table.on("tableBuilt", function onceBuilt() {
+        syncTemporaryPlotVisibility();
 
         if (newBasis !== "self") {
           trendsRecalc("checkbox");
@@ -13102,7 +13125,17 @@ function hideSpinner() {
           if (target) {
             target.click();
           }
-        }        
+        }
+
+        // p → temporarily hide/show Plot; do not change filters or URL state.
+        if (e.key === "p") {
+          e.preventDefault();
+          if (!e.repeat) {
+            plotColumnTemporarilyHidden = !plotColumnTemporarilyHidden;
+            syncTemporaryPlotVisibility();
+          }
+        }
+
         
         // e → hide columns that are blank in every currently visible row.
         if (e.key === "e") {
