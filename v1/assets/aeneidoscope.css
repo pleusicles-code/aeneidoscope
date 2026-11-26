@@ -1205,6 +1205,12 @@ body #corr-plottooltip.plottooltip { background: #fff; }
   padding: 5px !important;
 }
 
+/* Temporary enlargement of body cells only (shortcut: b). */
+body.large-segment-plot-text .tabulator-cell[tabulator-field="Segment"],
+body.large-segment-plot-text .tabulator-cell[tabulator-field="Plot"] {
+  font-size: calc(var(--fontsize-segmentplot) * 2) !important;
+}
+
 .plot-border-right {
   border-right: 1px solid grey !important;
 }

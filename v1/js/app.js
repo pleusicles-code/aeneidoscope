@@ -13130,6 +13130,12 @@ function hideSpinner() {
           }
         }
 
+        // b → temporarily double Segment and Plot body-cell font sizes.
+        if (e.key === "b") {
+          e.preventDefault();
+          if (!e.repeat) document.body.classList.toggle("large-segment-plot-text");
+        }
+
         // p → temporarily hide/show Plot; do not change filters or URL state.
         if (e.key === "p") {
           e.preventDefault();
