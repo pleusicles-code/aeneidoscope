@@ -13130,7 +13130,7 @@ function hideSpinner() {
           }
         }
 
-        // b → temporarily enlarge Segment and Plot body-cell font sizes to 150%.
+        // b → temporarily enlarge Segment to 140% and Plot to 120%.
         if (e.key === "b") {
           e.preventDefault();
           if (!e.repeat) document.body.classList.toggle("large-segment-plot-text");
