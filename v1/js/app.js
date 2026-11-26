@@ -37,6 +37,26 @@ function syncTemporaryPlotVisibility() {
   if (plotColumnTemporarilyHidden && plot.isVisible()) plot.hide();
   else if (!plotColumnTemporarilyHidden && !plot.isVisible()) plot.show();
 }
+// b temporarily enlarges Segment/Plot text and widens Plot to 150% of its default.
+let plotWidthBeforeEnlargement = null;
+let enlargedPlotColumn = null;
+function syncTemporaryPlotWidth() {
+  if (!table || typeof table.getColumn !== "function") return;
+  const plot = table.getColumn("Plot");
+  if (!plot) return;
+  const enlarged = document.body.classList.contains("large-segment-plot-text");
+  if (enlarged) {
+    if (enlargedPlotColumn !== plot) {
+      plotWidthBeforeEnlargement = plot.getWidth() || columnFormatMap.Plot.width;
+      enlargedPlotColumn = plot;
+      plot.setWidth(Math.round(columnFormatMap.Plot.width * 1.5));
+    }
+  } else if (enlargedPlotColumn === plot) {
+    plot.setWidth(plotWidthBeforeEnlargement);
+    plotWidthBeforeEnlargement = null;
+    enlargedPlotColumn = null;
+  }
+}
 // Display-only profile values are independent of the TRENDS cumulative setting.
 const profileColumnFields = ["TYP", ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}`),
   ...Array.from({length:6}, (_,i)=>`profile_CO${i+1}c`)];
@@ -11177,6 +11197,8 @@ function hideSpinner() {
     
     resetSegmentRankSelection();
     if (table) {
+      enlargedPlotColumn = null;
+      plotWidthBeforeEnlargement = null;
       table.destroy();
     }
     
@@ -11586,6 +11608,7 @@ function hideSpinner() {
       });
       
       table.on("tableBuilt", function onceBuilt() {
+        syncTemporaryPlotWidth();
         syncTemporaryPlotVisibility();
 
         if (newBasis !== "self") {
@@ -13130,10 +13153,13 @@ function hideSpinner() {
           }
         }
 
-        // b → temporarily enlarge Segment to 140% and Plot to 120%.
+        // b → enlarge Segment to 140%, Plot to 120%, and Plot width to 150%.
         if (e.key === "b") {
           e.preventDefault();
-          if (!e.repeat) document.body.classList.toggle("large-segment-plot-text");
+          if (!e.repeat) {
+            document.body.classList.toggle("large-segment-plot-text");
+            syncTemporaryPlotWidth();
+          }
         }
 
         // p → temporarily hide/show Plot; do not change filters or URL state.
