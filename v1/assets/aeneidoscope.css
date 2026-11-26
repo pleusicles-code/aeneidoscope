@@ -1213,6 +1213,14 @@ body.large-segment-plot-text .tabulator-cell[tabulator-field="Plot"] {
   font-size: calc(var(--fontsize-segmentplot) * 1.2) !important;
 }
 
+/* Override the normal fixed Plot widths as well as Tabulator inline widths. */
+body.large-segment-plot-text .tabulator-col[tabulator-field="Plot"],
+body.large-segment-plot-text .tabulator-cell[tabulator-field="Plot"] {
+  width: 195px !important;
+  min-width: 195px !important;
+  max-width: 195px !important;
+}
+
 .plot-border-right {
   border-right: 1px solid grey !important;
 }
