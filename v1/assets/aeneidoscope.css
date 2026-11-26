@@ -1211,6 +1211,7 @@ body.large-segment-plot-text .tabulator-cell[tabulator-field="Segment"] {
 }
 body.large-segment-plot-text .tabulator-cell[tabulator-field="Plot"] {
   font-size: calc(var(--fontsize-segmentplot) * 1.4) !important;
+  line-height: 0.9;
 }
 
 /* Override the normal fixed Plot widths as well as Tabulator inline widths. */
