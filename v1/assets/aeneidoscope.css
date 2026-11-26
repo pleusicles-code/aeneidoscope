@@ -1208,7 +1208,7 @@ body #corr-plottooltip.plottooltip { background: #fff; }
 /* Temporary enlargement of body cells only (shortcut: b). */
 body.large-segment-plot-text .tabulator-cell[tabulator-field="Segment"],
 body.large-segment-plot-text .tabulator-cell[tabulator-field="Plot"] {
-  font-size: calc(var(--fontsize-segmentplot) * 2) !important;
+  font-size: calc(var(--fontsize-segmentplot) * 1.5) !important;
 }
 
 .plot-border-right {
