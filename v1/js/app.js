@@ -13153,7 +13153,7 @@ function hideSpinner() {
           }
         }
 
-        // b → enlarge Segment to 140%, Plot to 120%, and Plot width to 150%.
+        // b → enlarge Segment and Plot to 140%, and Plot width to 150%.
         if (e.key === "b") {
           e.preventDefault();
           if (!e.repeat) {
